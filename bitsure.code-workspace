@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "bitsure",
+			"path": "."
+		},
+		{
+			"name": "flutter_packages",
+			"path": "../flutter_packages"
+		}
+	],
+	"settings": {}
+}
