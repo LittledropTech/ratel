@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:bitsure/provider/backup_logic_provider.dart';
-import 'package:bitsure/subscreens/createpinscreen.dart';
-import 'package:bitsure/subscreens/poemscreen.dart';
-import 'package:bitsure/subscreens/manuallybackupscreen.dart';
+import '../subscreens/createpinscreen.dart';
+import '../subscreens/poemscreen.dart';
+import '../subscreens/manuallybackupscreen.dart';
 // Assuming this is the correct path.
 import 'package:bitsure/utils/customutils.dart';
 import 'package:bitsure/utils/textstyle.dart';
@@ -127,14 +127,11 @@ class _BackupscreenState extends State<Backupscreen> {
                       final encryptedJson = jsonEncode(encryptedMap);
 
                       // STEP 4: Upload to Google Drive
-                      final timestamp = DateTime.now()
-                          .toIso8601String()
-                          .replaceAll(':', '-');
-                      final filename =
-                          "My_Wallet_Recovery_Phrase_$timestamp.txt";
+                      
+                      
                       await backupProvider.uploadToGoogleDrive(
                         encryptedJson,
-                        filename,
+                       
                       );
 
                       // Update UI
@@ -339,7 +336,7 @@ class _BackupscreenState extends State<Backupscreen> {
                     final navigator = Navigator.of(context);
 
                     try {
-                      // Step 1: Prompt for password
+                      //  Prompt for password
                       if (!context.mounted) return;
                       final password = await backupProvider.promptPassword(
                         context,' Encrypt with  Password ','Set BackUp Password',"You don't wanna be left in  the wild Besties",
@@ -359,7 +356,6 @@ class _BackupscreenState extends State<Backupscreen> {
                       if (!context.mounted) return;
                       final bool? downloaded = await navigator.push(
                         MaterialPageRoute(
-                          // CORRECTED: Fixed the typo in the class name
                           builder: (context) => PoemScreen(
                             poem: poem,
                             seedphrases: widget.seedphrases,
@@ -375,25 +371,20 @@ class _BackupscreenState extends State<Backupscreen> {
                           widget.seedphrases,
                         );
                         final encryptedJson = jsonEncode(encryptedMap);
-                        final timestamp = DateTime.now()
-                            .toIso8601String()
-                            .replaceAll(':', '-');
-                        final filename =
-                            "BitSure_MemePoem_Backup_$timestamp.txt";
                         await backupProvider.uploadToGoogleDrive(
                           encryptedJson,
-                          filename,
+                         
                         );
 
                         setState(() {
                           _backupstatus['meme_poem'] = true;
                         });
 
-                        // Step 6: Show ONE final, clear success message.
+                        //  Show ONE final, clear success message.
                         if (!context.mounted) return;
                         scaffoldMessenger.showSnackBar(
-                          const SnackBar(
-                            backgroundColor: Colors.green,
+                          SnackBar(
+                            backgroundColor: klightbluecolor,
                             content: Text(
                               "Meme Poem backup successfully saved to cloud!",
                             ),

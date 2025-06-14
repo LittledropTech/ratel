@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:bdk_flutter/bdk_flutter.dart';
-import 'package:bitsure/auth/wallet_auth.dart';
+import 'package:bitsure/dashboard/dashboard.dart';
+import 'package:provider/provider.dart';
+import '../../provider/wallet_authprovider.dart';
 import 'package:bitsure/utils/customutils.dart';
 import 'package:bitsure/utils/textstyle.dart';
 import 'package:bitsure/utils/theme.dart';
@@ -9,6 +13,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 class Createpinscreen extends StatefulWidget {
   const Createpinscreen({super.key});
@@ -20,98 +25,59 @@ class Createpinscreen extends StatefulWidget {
 class _CreatepinscreenState extends State<Createpinscreen> {
   final TextEditingController _pinController = TextEditingController();
   final secureStorage = FlutterSecureStorage();
-
   String? firstPin;
   bool isConfirming = false;
 
   String hashPin(String pin) {
     final bytes = utf8.encode(pin);
     final digest = sha256.convert(bytes);
-    return digest.toString(); // returns the hash as a hex string
+    return digest.toString(); 
   }
-
-  void _handlePinCompleted(String value) async {
-    if (!isConfirming) {
-      // First PIN entry
-      setState(() {
-        firstPin = value;
-        isConfirming = true;
-        _pinController.clear();
-      });
-    } else {
-      // Confirm PIN
-      if (value == firstPin) {
-        final hashedPin = hashPin(firstPin!);
-        print("storeHashed :$hashedPin");
-        await secureStorage.write(key: 'user_pin_hash', value: hashedPin);
-        await registerUserOnBackend(Network.Testnet);
-        customSnackBar('Pin set successfully', klightbluecolor, context);
-      } else {
-        setState(() {
-          firstPin = null;
-          isConfirming = false;
-          _pinController.clear();
-        });
-        customdialog(
-          context,
-          ktransarentcolor,
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              customcontainer(
-                300,
-                800,
-                BoxDecoration(
-                  color: kwhitecolor,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20),
-                  ),
-                ),
-                Column(
-                  children: [
-                    SizedBox(height: 20),
-                    Text('Wrong'),
-                    SizedBox(height: 20),
-                    CircleAvatar(
-                      radius: 50,
-                      backgroundImage: AssetImage('assets/meme8.png'),
-                    ),
-                    SizedBox(height: 20),
-                    Text('Your finger lies, Try again'),
-
-                    Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: custombuttons(
-                        40,
-                        250,
-                        BoxDecoration(
-                          color: klightbluecolor,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        () {
-                          Navigator.pop(context);
-                        },
-                        Center(
-                          child: Text('Retry', style: vsubheadingstextstyle),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          true,
-        );
-      }
-    }
+Future<void> _handlePinCompleted(String value) async {
+  if (!isConfirming) {
+    setState(() {
+      firstPin = value;
+      isConfirming = true;
+      _pinController.clear();
+    });
+    return; 
   }
+  if (value != firstPin) {
+    setState(() {
+      firstPin = null;
+      isConfirming = false;
+      _pinController.clear();
+    });
+    customErrorShowMeme(context);
+    return;
+  }
+  final walletAuthProvider = Provider.of<WalletAuthProvdiver>(context, listen: false);
+  final navigator = Navigator.of(context);
+  customLoader(context);
+  try {
+    final hashedPin = hashPin(firstPin!);
+    await secureStorage.write(key: 'user_pin_hash', value: hashedPin);
+    print("Hashed PIN stored successfully.");
+    await walletAuthProvider.registerUserOnBackend(Network.Testnet);
+    print("User registered on backend successfully.");
+    await navigator.pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => const DashboardScreen()),
+      (Route<dynamic> route) => false,
+    );
+  } catch (e) {
+    print("An error occurred during final setup: $e");
+    customNetworkErrorDialog(context);
+    setState(() {
+        firstPin = null;         // Go back to the "Set Your PIN" stage
+        isConfirming = false;
+        _pinController.clear();  // This clears the text field as you wanted
+    });
+  }
+}
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-
     return Scaffold(
       backgroundColor: kwhitecolor,
       appBar: AppBar(backgroundColor: kwhitecolor, elevation: 0),

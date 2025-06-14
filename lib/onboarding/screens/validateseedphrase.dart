@@ -1,5 +1,5 @@
 import 'dart:math';
-import 'package:bitsure/subscreens/createpinscreen.dart';
+import '../subscreens/createpinscreen.dart';
 import 'package:bitsure/utils/customutils.dart' show custombuttons;
 import 'package:flutter/material.dart';
 import 'package:bitsure/utils/textstyle.dart';
