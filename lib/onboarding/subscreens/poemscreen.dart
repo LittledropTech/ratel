@@ -6,10 +6,10 @@ import 'package:provider/provider.dart';
 
 class PoemScreen extends StatelessWidget {
   final String poem;
+    final String password; 
   final List<String> seedphrases;
 
-  const PoemScreen({Key? key, required this.poem, required this.seedphrases})
-    : super(key: key);
+  const PoemScreen({super.key, required this.poem, required this.seedphrases, required this.password});
 
   @override
   Widget build(BuildContext context) {
@@ -94,9 +94,9 @@ class PoemScreen extends StatelessWidget {
                       context,
                       listen: false,
                     );
-
-                    final filePath = await backupProvider
-                        .generatePoemTxtAndSave(poem);
+                      final String seedPhraseString = seedphrases.join(' ');
+                    final filePath = await backupProvider.generateAndSavePoemBackup(poem: poem, password: password, seedPhrase: seedPhraseString);
+                       
 
                     if (filePath != null) {
                       customSnackBar(

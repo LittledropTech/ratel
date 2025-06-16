@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:bdk_flutter/bdk_flutter.dart';
 import 'package:bitsure/dashboard/pages/dashboard.dart';
 import 'package:provider/provider.dart';
@@ -13,7 +11,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
-import 'package:connectivity_plus/connectivity_plus.dart';
 
 class Createpinscreen extends StatefulWidget {
   const Createpinscreen({super.key});
@@ -31,49 +28,53 @@ class _CreatepinscreenState extends State<Createpinscreen> {
   String hashPin(String pin) {
     final bytes = utf8.encode(pin);
     final digest = sha256.convert(bytes);
-    return digest.toString(); 
+    return digest.toString();
   }
-Future<void> _handlePinCompleted(String value) async {
-  if (!isConfirming) {
-    setState(() {
-      firstPin = value;
-      isConfirming = true;
-      _pinController.clear();
-    });
-    return; 
-  }
-  if (value != firstPin) {
-    setState(() {
-      firstPin = null;
-      isConfirming = false;
-      _pinController.clear();
-    });
-    customErrorShowMeme(context);
-    return;
-  }
-  final walletAuthProvider = Provider.of<WalletAuthProvdiver>(context, listen: false);
-  final navigator = Navigator.of(context);
-  customLoader(context);
-  try {
-    final hashedPin = hashPin(firstPin!);
-    await secureStorage.write(key: 'user_pin_hash', value: hashedPin);
-    print("Hashed PIN stored successfully.");
-    await walletAuthProvider.registerUserOnBackend(Network.Testnet);
-    print("User registered on backend successfully.");
-    await navigator.pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => const DashboardScreen()),
-      (Route<dynamic> route) => false,
-    );
-  } catch (e) {
-    print("An error occurred during final setup: $e");
-    customNetworkErrorDialog(context);
-    setState(() {
-        firstPin = null;         // Go back to the "Set Your PIN" stage
+
+  Future<void> _handlePinCompleted(String value) async {
+    if (!isConfirming) {
+      setState(() {
+        firstPin = value;
+        isConfirming = true;
+        _pinController.clear();
+      });
+      return;
+    }
+    if (value != firstPin) {
+      setState(() {
+        firstPin = null;
         isConfirming = false;
-        _pinController.clear();  // This clears the text field as you wanted
-    });
+        _pinController.clear();
+      });
+      customErrorShowMeme(context);
+      return;
+    }
+    final walletAuthProvider = Provider.of<WalletAuthProvdiver>(
+      context,
+      listen: false,
+    );
+    final navigator = Navigator.of(context);
+    try {
+      final hashedPin = hashPin(firstPin!);
+      await secureStorage.write(key: 'user_pin_hash', value: hashedPin);
+      print("Hashed PIN stored successfully.");
+      await navigator.pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const DashboardScreen()),
+        (Route<dynamic> route) => false,
+      );
+      Future.delayed(Duration(seconds: 5), () async {
+        await walletAuthProvider.registerUserOnBackend(Network.Testnet);
+      });
+    } catch (e) {
+      print("An error occurred during initial PIN storage: $e");
+      customNetworkErrorDialog(context); // Or a more relevant error message
+      setState(() {
+        firstPin = null;
+        isConfirming = false;
+        _pinController.clear();
+      });
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {

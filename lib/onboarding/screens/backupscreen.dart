@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ui';
 import 'package:bitsure/provider/backup_logic_provider.dart';
 import '../subscreens/createpinscreen.dart';
 import '../subscreens/poemscreen.dart';
@@ -72,6 +73,14 @@ class _BackupscreenState extends State<Backupscreen> {
                   size.width / 0.9,
                   BoxDecoration(
                     color: kwhitecolor,
+                    boxShadow: [
+                      BoxShadow(
+                        color: kblackcolor,
+                        spreadRadius: 0.5,
+                        blurRadius: 0.5,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
                     borderRadius: BorderRadius.circular(10),
                   ),
                   // handle fuctionality for backup with  Google Drive
@@ -106,7 +115,10 @@ class _BackupscreenState extends State<Backupscreen> {
                       // STEP 2: Ask for password
                       if (!context.mounted) return;
                       final password = await backupProvider.promptPassword(
-                        context,' Encrypt with  Password ','Set BackUp Password',"You don't wanna be left in  the wild Besties",
+                        context,
+                        ' Encrypt with  Password ',
+                        'Set BackUp Password',
+                        "You don't wanna be left in  the wild Besties",
                       );
                       if (password == null || password.isEmpty) {
                         if (!context.mounted) return;
@@ -127,12 +139,8 @@ class _BackupscreenState extends State<Backupscreen> {
                       final encryptedJson = jsonEncode(encryptedMap);
 
                       // STEP 4: Upload to Google Drive
-                      
-                      
-                      await backupProvider.uploadToGoogleDrive(
-                        encryptedJson,
-                       
-                      );
+
+                      await backupProvider.uploadToGoogleDrive(encryptedJson);
 
                       // Update UI
                       if (context.mounted) {
@@ -173,13 +181,61 @@ class _BackupscreenState extends State<Backupscreen> {
                                   ),
                                   const SizedBox(height: 20),
                                   const Text(
-                                    "Successfully saved to Google Drive",
+                                    "Successfully saved to Google Drive\n ",
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
+                                  Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: 40,
+                                    left: 6,
+                                    right: 6,
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(2),
+                                    child: BackdropFilter(
+                                      filter: ImageFilter.blur(
+                                        sigmaX: 10,
+                                        sigmaY: 10,
+                                      ),
+                                      child: customcontainer(
+                                        40,
+                                        size.width / 1.2,
+                                        BoxDecoration(
+                                          borderRadius: BorderRadius.circular(
+                                            2,
+                                          ),
+                                          color: kwhitecolor.withOpacity(
+                                            0.5,
+                                          ), // translucent color
+                                        ),
+                                        Row(
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.all(
+                                                15.0,
+                                              ),
+                                              child: Icon(
+                                                Icons.error_outline,
+                                                color: kredcolor,
+                                              ), // optional style
+                                            ),
+                                            Text(
+                                              'Do Not Lose Your Password',
+                                              style: GoogleFonts.quicksand(
+                                                color: kredcolor,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
                                   const SizedBox(height: 20),
                                   ElevatedButton(
                                     onPressed: () {
@@ -187,6 +243,7 @@ class _BackupscreenState extends State<Backupscreen> {
                                     },
                                     child: const Text("Done"),
                                   ),
+
                                 ],
                               ),
                             ),
@@ -254,6 +311,14 @@ class _BackupscreenState extends State<Backupscreen> {
                   70,
                   size.width,
                   BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: kblackcolor,
+                        spreadRadius: 0.5,
+                        blurRadius: 0.5,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
                     color: kwhitecolor,
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -323,10 +388,18 @@ class _BackupscreenState extends State<Backupscreen> {
                   70,
                   size.width,
                   BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: kblackcolor,
+                        spreadRadius: 0.5,
+                        blurRadius: 0.5,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
                     color: kwhitecolor,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  //the fuction that handles the backup with Meme poem
+                  // --- FULLY CORRECTED AND SECURE ONPRESSED FUNCTION ---
                   () async {
                     final backupProvider = Provider.of<BackupProvider>(
                       context,
@@ -336,10 +409,13 @@ class _BackupscreenState extends State<Backupscreen> {
                     final navigator = Navigator.of(context);
 
                     try {
-                      //  Prompt for password
+                      // Step 1: Prompt for the password (this part is correct).
                       if (!context.mounted) return;
                       final password = await backupProvider.promptPassword(
-                        context,' Encrypt with  Password ','Set BackUp Password',"You don't wanna be left in  the wild Besties",
+                        context,
+                        'Encrypt with Password',
+                        'Set BackUp Password',
+                        "You don't wanna be left in the wild Besties",
                       );
 
                       if (password == null || password.isEmpty) {
@@ -351,47 +427,42 @@ class _BackupscreenState extends State<Backupscreen> {
                         return;
                       }
 
-                      //  Navigate to poem screen to get user confirmation
+                      // Step 2: Generate the poem (this part is correct).
                       final poem = backupProvider.generateRandomPoem();
+
+                      // Step 3: Navigate to PoemScreen, now PASSING THE PASSWORD along with other data.
+                      // The PoemScreen is now responsible for handling the backup creation.
                       if (!context.mounted) return;
-                      final bool? downloaded = await navigator.push(
+                      final bool? backupCompleted = await navigator.push(
                         MaterialPageRoute(
                           builder: (context) => PoemScreen(
                             poem: poem,
-                            seedphrases: widget.seedphrases,
+                            seedphrases: widget
+                                .seedphrases, // Assuming this is a List<String>
+                            password: password, // <-- The crucial addition
                           ),
                         ),
                       );
 
-                      //  Checking  if the user confirmed.
-                      if (downloaded == true) {
-                        // Step 4: Encrypt the seed phrase.
-                        final encryptedMap = backupProvider.encryptSeed(
-                          password,
-                          widget.seedphrases,
-                        );
-                        final encryptedJson = jsonEncode(encryptedMap);
-                        await backupProvider.uploadToGoogleDrive(
-                          encryptedJson,
-                         
-                        );
-
+                      // Step 4: Check if the backup was successfully completed on the PoemScreen.
+                      if (backupCompleted == true) {
+                        // The user successfully saved the PDF from the PoemScreen.
+                        // Now, just update the UI on this screen.
                         setState(() {
                           _backupstatus['meme_poem'] = true;
                         });
 
-                        //  Show ONE final, clear success message.
                         if (!context.mounted) return;
                         scaffoldMessenger.showSnackBar(
                           SnackBar(
                             backgroundColor: klightbluecolor,
                             content: Text(
-                              "Meme Poem backup successfully saved to cloud!",
+                              "Meme Poem backup successfully created!",
                             ),
                           ),
                         );
                       } else {
-                        // If the user cancelled on the poem screen, let them know.
+                        // This means the user went to the PoemScreen but cancelled or backed out.
                         scaffoldMessenger.showSnackBar(
                           const SnackBar(
                             content: Text("Backup process was cancelled."),
@@ -399,10 +470,10 @@ class _BackupscreenState extends State<Backupscreen> {
                         );
                       }
                     } catch (e) {
-                      // Handle any errors that might happen
+                      // Handle any unexpected errors.
                       if (!context.mounted) return;
                       scaffoldMessenger.showSnackBar(
-                        SnackBar(content: Text(" An error occurred: $e")),
+                        SnackBar(content: Text("An error occurred: $e")),
                       );
                     }
                   },
@@ -456,6 +527,14 @@ class _BackupscreenState extends State<Backupscreen> {
                 40,
                 size.width * 0.9,
                 BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: kblackcolor,
+                      spreadRadius: 0.5,
+                      blurRadius: 0.5,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
                   color: klightbluecolor,
                   borderRadius: BorderRadius.circular(30),
                 ),

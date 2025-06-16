@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'dart:math';
+import 'package:bitsure/utils/theme.dart';
 import 'package:flutter/material.dart';
 
 class BouncingImagesScreen extends StatefulWidget {
-  const BouncingImagesScreen({Key? key}) : super(key: key);
+  const BouncingImagesScreen({super.key});
 
   @override
   State<BouncingImagesScreen> createState() => _BouncingImagesScreenState();
@@ -85,14 +86,7 @@ class _BouncingImagesScreenState extends State<BouncingImagesScreen> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         image: DecorationImage(image: AssetImage(imagePath), fit: BoxFit.cover),
-        boxShadow: [
-          BoxShadow(
-            color: const Color.fromARGB(255, 23, 22, 16).withOpacity(0.6),
-            spreadRadius: 4,
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
+      
       ),
     );
   }

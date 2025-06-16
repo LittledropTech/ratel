@@ -8,7 +8,6 @@ import 'dart:convert';
 
 
 
-
 class WalletAuthProvdiver with  ChangeNotifier{
   /// Loads existing wallet and returns full external & internal descriptors
 Future<Map<String, dynamic>> loadWallet(Network network) async {

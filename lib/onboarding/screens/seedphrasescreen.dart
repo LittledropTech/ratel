@@ -1,4 +1,3 @@
-
 import 'validateseedphrase.dart';
 import 'backupscreen.dart';
 import 'package:bitsure/utils/customutils.dart';
@@ -10,7 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 class Seedphrasescreen extends StatefulWidget {
   final List<String> mnemonicWords;
-  Seedphrasescreen({super.key, required this.mnemonicWords});
+  const Seedphrasescreen({super.key, required this.mnemonicWords});
 
   @override
   State<Seedphrasescreen> createState() => _SeedphrasescreenState();
@@ -83,7 +82,7 @@ class _SeedphrasescreenState extends State<Seedphrasescreen> {
                   spacing: 10,
                   runSpacing: 10,
                   children: List.generate(widget.mnemonicWords.length, (index) {
-                    return Container(
+                    return SizedBox(
                       width: 102, // Fixed width for all chips
                       height: 45, // Fixed height for all chips
                       child: Chip(
@@ -93,16 +92,19 @@ class _SeedphrasescreenState extends State<Seedphrasescreen> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        label: Container(
+                        label: SizedBox(
                           width: double.infinity,
                           height: double.infinity,
                           child: Center(
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: [
-                                Text('${index + 1}. ',style: TextStyle(color: klightbluecolor),),
                                 Text(
-                                  "${widget.mnemonicWords[index]}",
+                                  '${index + 1}. ',
+                                  style: TextStyle(color: klightbluecolor),
+                                ),
+                                Text(
+                                  widget.mnemonicWords[index],
                                   style: const TextStyle(
                                     fontSize:
                                         14, // Slightly smaller to fit better
@@ -163,6 +165,14 @@ class _SeedphrasescreenState extends State<Seedphrasescreen> {
                       40,
                       150,
                       BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: kblackcolor,
+                            spreadRadius: 0.5,
+                            blurRadius: 0.5,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
                         color: klightbluecolor,
                         borderRadius: BorderRadius.circular(20),
                       ),
@@ -189,6 +199,14 @@ class _SeedphrasescreenState extends State<Seedphrasescreen> {
                       40,
                       150,
                       BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: klightbluecolor,
+                            spreadRadius: 0.5,
+                            blurRadius: 0.5,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
                         color: kbackgroundcolor,
                         borderRadius: BorderRadius.circular(20),
                       ),

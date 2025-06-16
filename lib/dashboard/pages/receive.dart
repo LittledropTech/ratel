@@ -10,7 +10,7 @@ import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
-
+import 'package:bitsure/dashboard/pages/emoji_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -74,19 +74,21 @@ class _ReceiveBitcoinScreenState extends State<ReceiveBitcoinScreen> {
   // }
 
   void _shareAsEmoji() {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text("Share as Emoji"),
-        content: Text("🧾: ${userBitcoinAddress.substring(0, 6)}...😉"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("Close"),
-          ),
-        ],
-      ),
-    );
+showModalBottomSheet(
+  context: context,
+  isScrollControlled: true,
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.vertical(top: Radius.circular(48)),
+  ),
+  builder: (context) => Material(
+    borderRadius: BorderRadius.vertical(top: Radius.circular(48)),
+    child: SizedBox(
+      height: 700, // Desired height
+      child: EmojiSelectorScreen(),
+    ),
+  ),
+);
+
   }
 
   void _shareAddress() {
@@ -196,6 +198,7 @@ class _ReceiveBitcoinScreenState extends State<ReceiveBitcoinScreen> {
               Align(
                 alignment: Alignment.centerRight,
                 child: Container(
+                  margin: EdgeInsets.only(right: 10),
                   decoration: BoxDecoration(
                     color: Colors.amber[200],
                     borderRadius: BorderRadius.circular(8),

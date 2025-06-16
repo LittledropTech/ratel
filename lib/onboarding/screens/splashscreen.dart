@@ -1,5 +1,6 @@
 import 'package:bitsure/utils/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 
 class Splashscreen extends StatefulWidget {
   const Splashscreen({super.key});
@@ -13,32 +14,16 @@ class _SplashscreenState extends State<Splashscreen> {
   Widget build(BuildContext context) {
        final size = MediaQuery.of(context).size;
     return Scaffold(
-      body: Container(
-        height: size.height,
-        width: size.width,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [
-          kblackcolor,
-          kbackgroundcolor,
-        ],begin: Alignment.topLeft,end: Alignment.bottomRight),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text('BitSure',style: TextStyle(color: kwhitecolor,fontSize: 24,letterSpacing: 1.5,fontStyle: FontStyle.italic)),
-          SizedBox(
-            height: 20,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 10),
-              child: CircularProgressIndicator(
-                
-                color: kwhitecolor,
-              ),
-            ),
-          )
-        ],
-      ),
-    ),
+      body:  SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              height: 700,
+              width: 400,
+              child: Center(child: Lottie.asset('assets/play.json',repeat: true,reverse: true,height: size.height)))
+          ],
+        ),
+      )
     );
   }
 }

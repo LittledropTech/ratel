@@ -1,3 +1,4 @@
+import 'dart:ui';
 
 import '../../onboarding/screens/seedphrasescreen.dart';
 import 'package:bitsure/utils/customutils.dart';
@@ -23,19 +24,12 @@ class _PoliciesscreenState extends State<Policiesscreen> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    bool allChecked = ackNonCustodian && ackSeedPhrase && ackResponsibility;
-
     return Scaffold(
       backgroundColor: kwhitecolor,
       body: SingleChildScrollView(
         child: Column(
           children: [
-            SizedBox(height: 30),
-            Padding(
-              padding: const EdgeInsets.only(right: 140,top: 15),
-              child: Text('Terms and conditions ', style: GoogleFonts.poppins(color: kbackgroundcolor,fontSize: 17,fontWeight: FontWeight.bold))
-            ),
-            SizedBox(height: 12),
+            SizedBox(height: 2),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -51,66 +45,131 @@ class _PoliciesscreenState extends State<Policiesscreen> {
                     SingleChildScrollView(
                       child: Column(
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.all(15.0),
-                            child: 
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(
-                                    "⚠️ Welcome to BitSure\na Non-custodian Bitcoin wallet.By using this application, you agree to the following Terms and Conditions. Please read them carefully before proceeding.",
-                                    style: GoogleFonts.poppins(
-                                      color: kgoldencolor,
-                                    ),
-                                  ),
-                               
+                          SizedBox(height: 100),
+                          CircleAvatar(
+                            radius: 60,
+                            child: Center(
+                              child: Icon(
+                                Icons.key,
+                                size: 35,
+                                color: klightbluecolor,
+                              ),
                             ),
                           ),
                           SizedBox(height: 8),
-                  
-                          // Clause 1
-                          buildClauseCheckbox(
-                            title: 'Non-Custodian Acknowledgement:',
-                            description:
-                                'You understand and acknowledge that this wallet is non-custodial, meaning: You, and only you, control the private keys. We do not have access to your seed phrase, wallet, or funds. You are fully responsible for securing your wallet and recovery phrase.',
-                            value: ackNonCustodian,
-                            onChanged: (val) {
-                              setState(() {
-                                ackNonCustodian = val ?? false;
-                              });
-                            },
+                          Text(
+                            "You're the Captain Now",
+                            style: GoogleFonts.quicksand(
+                              color: kblackcolor,
+                              fontSize: 25,
+                            ),
                           ),
-                  
-                          SizedBox(height: 5.0),
-                  
-                          // Clause 2
-                          buildClauseCheckbox(
-                            title: ' Seed Phrase & Security:',
-                            description:
-                                'You must securely back up your 12 seed phrase. Losing access to your seed phrase means losing access to your wallet and funds permanently. We cannot help recover lost seed phrases or funds.',
-                            value: ackSeedPhrase,
-                            onChanged: (val) {
-                              setState(() {
-                                ackSeedPhrase = val ?? false;
-                              });
-                            },
+                          SizedBox(height: 30),
+                          customcontainer(
+                            size.height * 0.4,
+                            size.width / 1.2,
+                            BoxDecoration(
+                              boxShadow: [
+                                BoxShadow(
+                                  color: kblackcolor,
+                                  spreadRadius: 0.5,
+                                  blurRadius: 0.5,
+                                  offset: const Offset(0, 5),
+                                ),
+                              ],
+                              borderRadius: BorderRadius.circular(20),
+                              color: klightbluecolor,
+                            ),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 20,
+                                    right: 20,
+                                  ),
+                                  child: Center(
+                                    child: Column(
+                                    
+                                      children: [
+                                        Text(
+                                          'With great power comes great responsibility.',
+                                          style: GoogleFonts.poppins(
+                                            color: kwhitecolor,
+                                            fontSize: 17,
+                                          ),
+                                        ),
+                                        SizedBox(height: 4),
+                                        Text(
+                                          'You and only you will have access to your wallet keys,',
+                                          style: GoogleFonts.poppins(
+                                            color: kwhitecolor,
+                                            fontSize: 17,
+                                          ),
+                                        ),
+                                        SizedBox(height: 3),
+                                        Text(
+                                          'If you lose your keys, not even your mum can save you',
+                                          style: GoogleFonts.poppins(
+                                            color: kwhitecolor,
+                                            fontSize: 17,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: 40,
+                                    left: 6,
+                                    right: 6,
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(2),
+                                    child: BackdropFilter(
+                                      filter: ImageFilter.blur(
+                                        sigmaX: 10,
+                                        sigmaY: 10,
+                                      ),
+                                      child: customcontainer(
+                                        40,
+                                        size.width / 1.2,
+                                        BoxDecoration(
+                                          borderRadius: BorderRadius.circular(
+                                            2,
+                                          ),
+                                          color: kwhitecolor.withOpacity(
+                                            0.5,
+                                          ), // translucent color
+                                        ),
+                                        Row(
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.all(
+                                                15.0,
+                                              ),
+                                              child: Icon(
+                                                Icons.error_outline,
+                                                color: kredcolor,
+                                              ), // optional style
+                                            ),
+                                            Text(
+                                              'No support Email,No forgot Key \nButton,You must save this properly',
+                                              style: GoogleFonts.quicksand(
+                                                color: kredcolor,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                  
-                          SizedBox(height: 8),
-                  
-                          //  Clause 3
-                          buildClauseCheckbox(
-                            title: 'Your Responsibility:',
-                            description:
-                                'You are responsible for maintaining the security of your wallet and private keys. Ensure you take serious precautions to safeguard your recovery phrase and authentication credentials. Failure to protect your access information may result in irreversible loss of funds and data.',
-                            value: ackResponsibility,
-                            onChanged: (val) {
-                              setState(() {
-                                ackResponsibility = val ?? false;
-                              });
-                            },
-                          ),
-                  
-                          SizedBox(height: 10),
                         ],
                       ),
                     ),
@@ -118,21 +177,55 @@ class _PoliciesscreenState extends State<Policiesscreen> {
                 ),
               ],
             ),
-            SizedBox(height: 10),
-            if (allChecked)
-              custombuttons(
-                40,
-                size.width / 1.4,
-                BoxDecoration(
-                  color: klightbluecolor,
-                  borderRadius: BorderRadius.circular(20),
+
+            buildClauseCheckbox(
+              title: "I understand I'm responsible for my keys and funds",
+
+              value: ackNonCustodian,
+              onChanged: (val) {
+                setState(() {
+                  ackNonCustodian = val ?? false;
+                });
+              },
+            ),
+            SizedBox(height: 15),
+            if (ackNonCustodian)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 30),
+                child: custombuttons(
+                  40,
+                  size.width / 1.2,
+                  BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: kblackcolor,
+                        spreadRadius: 0.5,
+                        blurRadius: 0.5,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                    color: klightbluecolor,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) {
+                          return Seedphrasescreen(
+                            mnemonicWords: widget.mnemonics,
+                          );
+                        },
+                      ),
+                    );
+                  },
+                  Center(
+                    child: Text(
+                      "I'm Ready, Let's Go",
+                      style: vbuttontextstyles,
+                    ),
+                  ),
                 ),
-                () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) {
-                    return Seedphrasescreen(mnemonicWords: widget.mnemonics);
-                  }));
-                },
-                Center(child: Text('Continue', style: vbuttontextstyles)),
               ),
           ],
         ),
@@ -142,7 +235,6 @@ class _PoliciesscreenState extends State<Policiesscreen> {
 
   Widget buildClauseCheckbox({
     required String title,
-    required String description,
     required bool value,
     required void Function(bool?) onChanged,
   }) {
@@ -166,13 +258,8 @@ class _PoliciesscreenState extends State<Policiesscreen> {
                 children: [
                   TextSpan(
                     text: '$title\n',
-                    style: TextStyle(
-                      color: klightbluecolor,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(color: kbackgroundcolor, fontSize: 15),
                   ),
-                  TextSpan(text: description),
                 ],
               ),
             ),
