@@ -1,3 +1,8 @@
+
+import 'package:bitsure/dashboard/pages/dashboard.dart';
+import 'package:bitsure/onboarding/restorewalletflow/eneter_password.dart';
+import 'package:bitsure/onboarding/restorewalletflow/mannual_restore.dart';
+import 'package:bitsure/onboarding/restorewalletflow/restore_new_code.dart';
 import 'package:bitsure/provider/backup_logic_provider.dart';
 import 'package:bitsure/utils/customutils.dart';
 import 'package:bitsure/utils/textstyle.dart';
@@ -13,10 +18,53 @@ class Restorewalletscreen extends StatefulWidget {
 }
 
 class _RestorewalletscreenState extends State<Restorewalletscreen> {
+  
+  
   @override
   Widget build(BuildContext context) {
-    final backupProvider = Provider.of<BackupProvider>(context, listen: false);
     final size = MediaQuery.of(context).size;
+  Future<void> retrieveWalletSeedFromGoogleDrive(BuildContext context) async {
+  final backupProvider = Provider.of<BackupProvider>(context, listen: false);
+  final messenger = ScaffoldMessenger.of(context);
+  final navigator = Navigator.of(context);
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) => const Center(child: CircularProgressIndicator()),
+  );
+  try {
+    final encryptedPhrase = await backupProvider.downloadEncryptedBackup();
+    final password = await navigator.push<String>(
+      MaterialPageRoute(
+        builder: (context) => Restorewalletvalidatescreen(subpagetext: 'Let gets you In ', pagetext: 'Enter Your BackUp Password' ,text: 'verify')
+      ),
+    );
+    if (password == null || password.isEmpty) {
+      navigator.pop();
+      return;
+    }
+    final List<String> decryptedSeed = backupProvider.decryptSeed(
+      encryptedPhrase!, // We know this is not null if the download succeeded
+      password,
+    );
+    print("Decryption successful. Seed Phrase: $decryptedSeed");
+    await navigator.pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => RestoreNewCode()),
+      (Route<dynamic> route) => false,
+    );
+
+  } catch (e) {
+    navigator.pop();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text("Error: ${e.toString()}"),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+}
+    
+    
     return Scaffold(
       appBar: AppBar(
         backgroundColor: kbackupcolor,
@@ -42,12 +90,7 @@ class _RestorewalletscreenState extends State<Restorewalletscreen> {
                   ),
                   // handle fuctionality for retrieve  with  Google Drive
                   () async {
-                    await backupProvider.promptPassword(
-                      context,
-                      'i got it ',
-                      'Enter Backup password ',
-                      "Sorry bestie it's all for your good",
-                    );
+                    await retrieveWalletSeedFromGoogleDrive(context);
                   },
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -97,7 +140,11 @@ class _RestorewalletscreenState extends State<Restorewalletscreen> {
                     color: kwhitecolor,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  () {},
+                  () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context){
+                      return ManualRestoreScreen();
+                    }));
+                  },
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [

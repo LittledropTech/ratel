@@ -1,23 +1,25 @@
+import 'dart:convert';
+
 import 'package:bdk_flutter/bdk_flutter.dart';
-import 'package:bitsure/auth/wallet_auth.dart';
+import 'package:bitsure/dashboard/pages/dashboard.dart';
+import 'package:bitsure/provider/wallet_authprovider.dart';
 import 'package:bitsure/utils/customutils.dart';
 import 'package:bitsure/utils/textstyle.dart';
 import 'package:bitsure/utils/theme.dart';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
-import 'package:crypto/crypto.dart';
-import 'dart:convert';
 
-class Createpinscreen extends StatefulWidget {
-  const Createpinscreen({super.key});
+class RestoreNewCode extends StatefulWidget {
+ const RestoreNewCode({super.key});
 
   @override
-  State<Createpinscreen> createState() => _CreatepinscreenState();
+  State<RestoreNewCode> createState() => _RestoreNewCodeState();
 }
 
-class _CreatepinscreenState extends State<Createpinscreen> {
+class _RestoreNewCodeState extends State<RestoreNewCode> {
   final TextEditingController _pinController = TextEditingController();
   final secureStorage = FlutterSecureStorage();
 
@@ -44,7 +46,9 @@ class _CreatepinscreenState extends State<Createpinscreen> {
         final hashedPin = hashPin(firstPin!);
         print("storeHashed :$hashedPin");
         await secureStorage.write(key: 'user_pin_hash', value: hashedPin);
-        await registerUserOnBackend(Network.Testnet);
+          Navigator.push(context,MaterialPageRoute(builder: (context){
+            return  DashboardScreen();
+          }));
         customSnackBar('Pin set successfully', klightbluecolor, context);
       } else {
         setState(() {
@@ -52,58 +56,7 @@ class _CreatepinscreenState extends State<Createpinscreen> {
           isConfirming = false;
           _pinController.clear();
         });
-        customdialog(
-          context,
-          ktransarentcolor,
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              customcontainer(
-                300,
-                800,
-                BoxDecoration(
-                  color: kwhitecolor,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20),
-                  ),
-                ),
-                Column(
-                  children: [
-                    SizedBox(height: 20),
-                    Text('Wrong'),
-                    SizedBox(height: 20),
-                    CircleAvatar(
-                      radius: 50,
-                      backgroundImage: AssetImage('assets/meme8.png'),
-                    ),
-                    SizedBox(height: 20),
-                    Text('Your finger lies, Try again'),
-
-                    Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: custombuttons(
-                        40,
-                        250,
-                        BoxDecoration(
-                          color: klightbluecolor,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        () {
-                          Navigator.pop(context);
-                        },
-                        Center(
-                          child: Text('Retry', style: vsubheadingstextstyle),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          true,
-        );
+        
       }
     }
   }
@@ -111,7 +64,6 @@ class _CreatepinscreenState extends State<Createpinscreen> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-
     return Scaffold(
       backgroundColor: kwhitecolor,
       appBar: AppBar(backgroundColor: kwhitecolor, elevation: 0),

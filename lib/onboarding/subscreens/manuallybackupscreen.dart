@@ -1,26 +1,23 @@
-
-import 'package:bitsure/screens/validateseedphrase.dart';
-import 'package:bitsure/screens/backupscreen.dart';
-import 'package:bitsure/utils/customutils.dart';
+import '../screens/backupscreen.dart';
 import 'package:bitsure/utils/textstyle.dart';
 import 'package:bitsure/utils/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:google_fonts/google_fonts.dart';
 
-class Seedphrasescreen extends StatefulWidget {
-  final List<String> mnemonicWords;
-  Seedphrasescreen({super.key, required this.mnemonicWords});
+class Manuallybackupscreen extends StatefulWidget {
+  final  List<String> mnemonicWords;
+  const Manuallybackupscreen({super.key, required this.mnemonicWords});
 
   @override
-  State<Seedphrasescreen> createState() => _SeedphrasescreenState();
+  State<Manuallybackupscreen> createState() => _ManuallybackupscreenState();
 }
 
-class _SeedphrasescreenState extends State<Seedphrasescreen> {
+class _ManuallybackupscreenState extends State<Manuallybackupscreen> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    return Scaffold(
+     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
         title: Text(
@@ -28,7 +25,7 @@ class _SeedphrasescreenState extends State<Seedphrasescreen> {
           style: GoogleFonts.poppins(
             color: kblackcolor,
             fontSize: 20,
-            fontWeight: FontWeight.w400,
+            fontWeight: FontWeight.bold,
           ),
         ),
         backgroundColor: kwhitecolor,
@@ -121,6 +118,7 @@ class _SeedphrasescreenState extends State<Seedphrasescreen> {
                   }),
                 ),
               ),
+              SizedBox(height: 40,),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: InkWell(
@@ -154,63 +152,7 @@ class _SeedphrasescreenState extends State<Seedphrasescreen> {
               ),
               SizedBox(height: 2),
 
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(3.0),
-                    child: custombuttons(
-                      40,
-                      150,
-                      BoxDecoration(
-                        color: klightbluecolor,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) {
-                              return Validateseedphrase(
-                                mnemonicWords: widget.mnemonicWords,
-                              );
-                            },
-                          ),
-                        );
-                      },
-                      Center(
-                        child: Text('continue', style: vsubheadingstextstyle),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: custombuttons(
-                      40,
-                      150,
-                      BoxDecoration(
-                        color: kbackgroundcolor,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) {
-                              return Backupscreen(
-                                seedphrases: widget.mnemonicWords,
-                              );
-                            },
-                          ),
-                        );
-                      },
-                      Center(
-                        child: Text('Back Up', style: vsubheadingstextstyle),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+           
             ],
           ),
         ),

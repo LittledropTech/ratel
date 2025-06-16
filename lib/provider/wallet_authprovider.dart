@@ -1,17 +1,22 @@
 import 'package:bdk_flutter/bdk_flutter.dart';
 import 'package:bitsure/network/createwallet.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:uuid/uuid.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-/// Loads wallet and returns clean xpubs
+
+
+
+class WalletAuthProvdiver with  ChangeNotifier{
+  /// Loads existing wallet and returns full external & internal descriptors
 Future<Map<String, dynamic>> loadWallet(Network network) async {
   final secureStorage = const FlutterSecureStorage();
   final mnemonicStr = await secureStorage.read(key: 'users_mnemonics');
 
   if (mnemonicStr == null) {
-    throw Exception("No wallet found locally");
+    throw Exception("No wallet found in secure storage");
   }
 
   final mnemonic = await Mnemonic.fromString(mnemonicStr);
@@ -35,44 +40,16 @@ Future<Map<String, dynamic>> loadWallet(Network network) async {
   final String externalRaw = await externalDescriptor.asString();
   final String internalRaw = await internalDescriptor.asString();
 
-  print('External Descriptor: $externalRaw');
-  print('Internal Descriptor: $internalRaw');
+  print('✅ External Descriptor: $externalRaw');
+  print('✅ Internal Descriptor: $internalRaw');
 
-  try {
-    final String externalXpub = _extractXpubFromDescriptor(externalRaw);
-    final String internalXpub = _extractXpubFromDescriptor(internalRaw);
-
-    return {
-      'externalDescriptor': externalXpub,
-      'internalDescriptor': internalXpub,
-    };
-  } catch (e, stacktrace) {
-    print(' Failed to extract xpub: $e');
-    print(stacktrace);
-    throw Exception('Failed to extract xpub from descriptor');
-  }
+  return {
+    'external_descriptor': externalRaw,
+    'internal_descriptor': internalRaw,
+  };
 }
 
-/// Extracts raw tpub string from descriptor format becauses while on network.testnet bdk_flutter runs tpub
-
-String _extractXpubFromDescriptor(String descriptor) {
-  if (descriptor.isEmpty) {
-    throw Exception('Descriptor is empty');
-  }
-
-  final regex = RegExp(r'\[.*?\]([a-z]pub[0-9A-Za-z]+)');
-  final match = regex.firstMatch(descriptor);
-
-  if (match != null && match.groupCount >= 1) {
-    return match.group(1)!;
-  } else {
-    print(' Descriptor did not match regex: $descriptor');
-    throw Exception('Failed to extract xpub/tpub from descriptor');
-  }
-}
-
-
-/// Generates or retrieves a stored user ID
+/// Generates or retrieves a stored UUIDv4 for the user
 Future<String> getOrCreateUserId() async {
   final storage = const FlutterSecureStorage();
   const key = 'user_id';
@@ -85,7 +62,7 @@ Future<String> getOrCreateUserId() async {
   return userId;
 }
 
-/// Register user with backend using raw xpubs
+/// Registers the user on your backend with full descriptors
 Future<void> registerUserOnBackend(Network network) async {
   final userId = await getOrCreateUserId();
   final secureStorage = const FlutterSecureStorage();
@@ -96,22 +73,23 @@ Future<void> registerUserOnBackend(Network network) async {
   if (hasWallet) {
     walletData = await loadWallet(network);
   } else {
-    walletData = await createWallet(network);
+    walletData = await createWallet(network); // Ensure `createWallet` also returns descriptors
   }
 
   final payload = {
     'user_id': userId,
-    'external_descriptor': walletData['externalDescriptor'],
-    'internal_descriptor': walletData['internalDescriptor'],
+    'external_descriptor': walletData['external_descriptor'],
+    'internal_descriptor': walletData['internal_descriptor'],
   };
 
-  print('Sending payload to backend: $payload');
+  print('🚀 Sending payload to backend: $payload');
   await sendToBackend(payload);
 }
 
-/// Sends user ID and xpubs to backend
+/// Sends user ID and full descriptors to your backend
 Future<void> sendToBackend(Map<String, dynamic> payload) async {
-  const String url = 'https://your-backend-api.com/register'; 
+  //sending my users decriptor to the backend 
+  const String url = 'https://test-api-ratle.littledrop.co'; 
 
   final response = await http.post(
     Uri.parse(url),
@@ -119,10 +97,12 @@ Future<void> sendToBackend(Map<String, dynamic> payload) async {
     body: jsonEncode(payload),
   );
 
-  if (response.statusCode != 200) {
-    print('Backend response: ${response.statusCode} ${response.body}');
-    throw Exception('Failed to register user on backend');
+  if (response.statusCode != 200 && response.statusCode ==201) {
+    throw Exception('Failed to register user on backend: with statusCode ${response.statusCode}:with body ${response.body}');
   } else {
-    print(' Successfully registered user on backend');
+    print('Successfully registered user on backend');
   }
+}
+
+
 }

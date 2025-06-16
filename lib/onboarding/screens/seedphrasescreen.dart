@@ -1,23 +1,26 @@
-import 'package:bitsure/screens/backupscreen.dart';
+
+import 'validateseedphrase.dart';
+import 'backupscreen.dart';
+import 'package:bitsure/utils/customutils.dart';
 import 'package:bitsure/utils/textstyle.dart';
 import 'package:bitsure/utils/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:google_fonts/google_fonts.dart';
 
-class Manuallybackupscreen extends StatefulWidget {
-  final  List<String> mnemonicWords;
-  const Manuallybackupscreen({super.key, required this.mnemonicWords});
+class Seedphrasescreen extends StatefulWidget {
+  final List<String> mnemonicWords;
+  Seedphrasescreen({super.key, required this.mnemonicWords});
 
   @override
-  State<Manuallybackupscreen> createState() => _ManuallybackupscreenState();
+  State<Seedphrasescreen> createState() => _SeedphrasescreenState();
 }
 
-class _ManuallybackupscreenState extends State<Manuallybackupscreen> {
+class _SeedphrasescreenState extends State<Seedphrasescreen> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-     return Scaffold(
+    return Scaffold(
       appBar: AppBar(
         centerTitle: true,
         title: Text(
@@ -25,7 +28,7 @@ class _ManuallybackupscreenState extends State<Manuallybackupscreen> {
           style: GoogleFonts.poppins(
             color: kblackcolor,
             fontSize: 20,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w400,
           ),
         ),
         backgroundColor: kwhitecolor,
@@ -47,7 +50,7 @@ class _ManuallybackupscreenState extends State<Manuallybackupscreen> {
               Padding(
                 padding: EdgeInsets.all(15.0),
                 child: CircleAvatar(
-                  radius: 70,
+                  radius: 65,
                   backgroundImage: AssetImage('assets/meme4.png'),
                 ),
               ),
@@ -81,7 +84,7 @@ class _ManuallybackupscreenState extends State<Manuallybackupscreen> {
                   runSpacing: 10,
                   children: List.generate(widget.mnemonicWords.length, (index) {
                     return Container(
-                      width: 106, // Fixed width for all chips
+                      width: 102, // Fixed width for all chips
                       height: 45, // Fixed height for all chips
                       child: Chip(
                         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -118,7 +121,6 @@ class _ManuallybackupscreenState extends State<Manuallybackupscreen> {
                   }),
                 ),
               ),
-              SizedBox(height: 40,),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: InkWell(
@@ -136,13 +138,13 @@ class _ManuallybackupscreenState extends State<Manuallybackupscreen> {
                     children: [
                       IconButton(
                         onPressed: () {},
-                        icon: Icon(Icons.copy, color: kblackcolor, size: 20),
+                        icon: Icon(Icons.copy, color: kblackcolor, size: 15),
                       ),
                       Text(
                         'Copy Seed Phrase',
                         style: GoogleFonts.poppins(
                           color: kblackcolor,
-                          fontSize: 16,
+                          fontSize: 13,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -150,9 +152,65 @@ class _ManuallybackupscreenState extends State<Manuallybackupscreen> {
                   ),
                 ),
               ),
-              SizedBox(height: 2),
+              SizedBox(height: 13),
 
-           
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(3.0),
+                    child: custombuttons(
+                      40,
+                      150,
+                      BoxDecoration(
+                        color: klightbluecolor,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) {
+                              return Validateseedphrase(
+                                mnemonicWords: widget.mnemonicWords,
+                              );
+                            },
+                          ),
+                        );
+                      },
+                      Center(
+                        child: Text('continue', style: vsubheadingstextstyle),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(5.0),
+                    child: custombuttons(
+                      40,
+                      150,
+                      BoxDecoration(
+                        color: kbackgroundcolor,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) {
+                              return Backupscreen(
+                                seedphrases: widget.mnemonicWords,
+                              );
+                            },
+                          ),
+                        );
+                      },
+                      Center(
+                        child: Text('Back Up', style: vsubheadingstextstyle),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),

@@ -1,5 +1,5 @@
 
-import 'package:bitsure/screens/seedphrasescreen.dart';
+import '../../onboarding/screens/seedphrasescreen.dart';
 import 'package:bitsure/utils/customutils.dart';
 import 'package:bitsure/utils/theme.dart';
 import 'package:flutter/material.dart';

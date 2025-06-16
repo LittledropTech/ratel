@@ -1,6 +1,6 @@
 
 import 'package:bitsure/animate/boundingimagescreen.dart';
-import 'package:bitsure/screens/optionscreen.dart' show Optionscreen;
+import 'optionscreen.dart' show Optionscreen;
 import 'package:bitsure/utils/customutils.dart';
 import 'package:bitsure/utils/theme.dart';
 import 'package:flutter/material.dart';

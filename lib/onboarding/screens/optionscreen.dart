@@ -1,7 +1,7 @@
 import 'package:bdk_flutter/bdk_flutter.dart';
 import 'package:bitsure/network/createwallet.dart';
 import 'package:bitsure/policy/policiesscreen.dart';
-import 'package:bitsure/restorewalletflow/restorewalletscreen.dart';
+import 'package:bitsure/onboarding/restorewalletflow/restorewalletscreen.dart';
 
 import 'package:bitsure/utils/customutils.dart' show custombuttons, customcontainer;
 import 'package:bitsure/utils/textstyle.dart';
