@@ -55,6 +55,15 @@ customdialog(BuildContext context, Color color, Widget content, bool dismisal) {
   );
 }
 
+int btcToSats(double btcAmount) {
+  return (btcAmount * 100000000).round();
+}
+
+// convert from satoshis to BTC
+double satsToBtc(int sats) {
+  return sats / 100000000;
+  }
+
 customSnackBar(String text, Color colors, BuildContext context) {
   ScaffoldMessenger.of(
     context,

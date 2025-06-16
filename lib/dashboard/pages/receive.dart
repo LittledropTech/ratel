@@ -1,8 +1,10 @@
 import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:bdk_flutter/bdk_flutter.dart';
 import 'package:bitsure/utils/theme.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image/image.dart' as img;
@@ -24,7 +26,7 @@ class ReceiveBitcoinScreen extends StatefulWidget {
 }
 
 class _ReceiveBitcoinScreenState extends State<ReceiveBitcoinScreen> {
-  final String userBitcoinAddress = "gstr27467289834tyghsoiwehjdf";
+   String userBitcoinAddress = '';
   final TextEditingController amountController = TextEditingController();
   final ScreenshotController screenshotController = ScreenshotController();
   Future<void> onDownload(BuildContext context) async {
@@ -48,7 +50,7 @@ class _ReceiveBitcoinScreenState extends State<ReceiveBitcoinScreen> {
           throw UnsupportedError("Unsupported platform");
         }
 
-        final filePath = '${directory.path}/monieboxx_receipt.png';
+        final filePath = '${directory.path}/ratel_receipt.png';
         final file = File(filePath);
 
         // Write the image file
@@ -105,6 +107,79 @@ class _ReceiveBitcoinScreenState extends State<ReceiveBitcoinScreen> {
       amountController.text = amount;
     });
   }
+
+
+    @override
+  void initState() {
+    super.initState();
+    _initializeWalletAndBalance();
+  }
+
+  Wallet? _wallet;
+  int? _balanceSats;
+  bool _isLoading = true;
+  String? displayText;
+  String? address;
+  String? balance;
+  final network = Network.Testnet;
+
+  Future<String> getNewAddress(Wallet? wallet) async {
+    final addressInfo = await wallet?.getAddress(
+      addressIndex: const AddressIndex.new(),
+    );
+     setState(() {
+       userBitcoinAddress = addressInfo!.address.toString();
+     });
+    return addressInfo!.address.toString();
+  }
+
+  Future<void> _initializeWalletAndBalance() async {
+    try {
+      // This assumes you already created descriptors
+
+      FlutterSecureStorage storage = const FlutterSecureStorage();
+      String? mnemonicStr = await storage.read(key: 'users_mnemonics') ?? "";
+
+      final mnemonic = await Mnemonic.fromString(mnemonicStr);
+
+      final descriptorSecretKey = await DescriptorSecretKey.create(
+        network: network,
+        mnemonic: mnemonic,
+      );
+
+      final externalDescriptor = await Descriptor.newBip44(
+        secretKey: descriptorSecretKey,
+        network: network,
+        keychain: KeychainKind.External,
+      );
+
+      final internalDescriptor = await Descriptor.newBip44(
+        secretKey: descriptorSecretKey,
+        network: network,
+        keychain: KeychainKind.Internal,
+      );
+
+      _wallet = await Wallet.create(
+        descriptor: externalDescriptor,
+        changeDescriptor: internalDescriptor,
+        network: Network.Testnet,
+        databaseConfig: const DatabaseConfig.memory(),
+      );
+
+      final balance = await _wallet!.getBalance();
+      setState(() {
+        _balanceSats = balance.total;
+        _isLoading = false;
+      });
+
+      getNewAddress(_wallet);
+      log(_balanceSats.toString(), name: "Sats Balance");
+    } catch (e) {
+      debugPrint('Error initializing wallet: $e');
+      setState(() {
+        _isLoading = false;
+      });
+    }}
 
   @override
   Widget build(BuildContext context) {

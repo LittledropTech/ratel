@@ -2,8 +2,11 @@
 import 'dart:developer';
 
 import 'package:bdk_flutter/bdk_flutter.dart';
+import 'package:bitsure/dashboard/pages/bag/all_bags.dart';
+import 'package:bitsure/utils/customutils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../gen/assets.gen.dart';
@@ -17,49 +20,165 @@ class WalletCard extends StatefulWidget {
 }
 
 class _WalletCardState extends State<WalletCard> {
-  //   @override
-  // void initState() {
-  //   super.initState();
-  //   _initializeWalletAndBalance();
-  // }
-  // Wallet? _wallet;
-  // int? _balanceSats;
-  // bool _isLoading = true;
+  @override
+  void initState() {
+    super.initState();
+    _initializeWalletAndBalance();
+  }
 
-  // Future<void> _initializeWalletAndBalance() async {
+  Wallet? _wallet;
+  int? _balanceSats;
+  late Blockchain blockchain;
+  bool _isLoading = true;
+  String? displayText;
+  String? address;
+  String? balance;
+  final network = Network.Testnet;
+
+  Future<String> getNewAddress(Wallet? wallet) async {
+    final addressInfo = await wallet?.getAddress(
+      addressIndex: const AddressIndex.new(),
+    );
+    log(addressInfo!.address.toString());
+    return addressInfo!.address.toString();
+  }
+
+
+  Future<void> syncWallet(Wallet wallet, {String? electrumUrl}) async {
+  // Default Electrum server for testnet
+  final defaultElectrumUrl = electrumUrl ?? 'ssl://electrum.blockstream.info:60002';
+  
+  final blockchain = await Blockchain.create(
+    config: BlockchainConfig.electrum(
+      config: ElectrumConfig(
+        url: defaultElectrumUrl,
+        socks5: null,
+        retry: 5,
+        timeout: 5,
+        stopGap: 10,
+        validateDomain: false,
+      ),
+    ),
+  );
+  
+  await wallet.sync(blockchain);
+}
+
+  // blockchainInit() async {
   //   try {
-  //     // This assumes you already created descriptors
-  //     final descriptor = await Descriptor.create(
-  //       descriptor: 'wpkh([fingerprint/derivation]xpub/0/*)', // replace with actual
-  //       network: Network.Testnet,
+  //     blockchain = await Blockchain.create(
+  //       config: BlockchainConfig.esplora(
+  //         config: EsploraConfig(
+  //           baseUrl: "https://mutinynet.com/api",
+  //           // stopGap: BigInt.from(10),
+  //           // timeout: BigInt.from(5),
+  //           stopGap: 10,
+  //           timeout: 5,
+  //           concurrency: 4,
+  //           proxy: null,
+  //         ),
+  //       ),
   //     );
 
-  //     final changeDescriptor = await Descriptor.create(
-  //       descriptor: 'wpkh([fingerprint/derivation]xpub/1/*)', // replace with actual
-  //       network: Network.Testnet,
-  //     );
-
-  //     _wallet = await Wallet.create(
-  //       descriptor: descriptor,
-  //       changeDescriptor: changeDescriptor,
-  //       network: Network.Testnet,
-  //       databaseConfig: const DatabaseConfig.memory(),
-  //     );
-
-  //     final balance = await _wallet!.getBalance();
+  //     if (kDebugMode) {
+  //       print("Blockchain initialized successfully");
+  //     }
+  //   } on Exception catch (e) {
   //     setState(() {
-  //       _balanceSats = balance.total;
-  //       _isLoading = false;
-  //     });
-
-  //     log(_balanceSats.toString());
-  //   } catch (e) {
-  //     debugPrint('Error initializing wallet: $e');
-  //     setState(() {
-  //       _isLoading = false;
+  //       displayText = "Error: ${e.toString()}";
   //     });
   //   }
   // }
+
+  // Future<void> syncWallet() async {
+  //   try {
+  //     setState(() {
+  //       displayText = "Syncing wallet...";
+  //     });
+
+  //     await _wallet?.sync(blockchain);
+  //     setState(() {
+  //       displayText = "Sync completed";
+  //     });
+
+  //     if (kDebugMode) {
+  //       print("Wallet sync completed successfully");
+  //     }
+  //   } on Exception catch (e) {
+  //     setState(() {
+  //       displayText = "Sync error: $e";
+  //     });
+  //     if (kDebugMode) {
+  //       print("Error during sync: $e");
+  //     }
+  //   }
+  // }
+
+  Future<void> _initializeWalletAndBalance() async {
+    try {
+      // This assumes you already created descriptors
+
+      FlutterSecureStorage storage = const FlutterSecureStorage();
+      String? mnemonicStr = await storage.read(key: 'users_mnemonics') ?? "";
+
+      final mnemonic = await Mnemonic.fromString(mnemonicStr);
+      //  await blockchainInit();
+    
+
+      final descriptorSecretKey = await DescriptorSecretKey.create(
+        network: network,
+        mnemonic: mnemonic,
+      );
+
+      final externalDescriptor = await Descriptor.newBip44(
+        secretKey: descriptorSecretKey,
+        network: network,
+        keychain: KeychainKind.External,
+      );
+
+      final internalDescriptor = await Descriptor.newBip44(
+        secretKey: descriptorSecretKey,
+        network: network,
+        keychain: KeychainKind.Internal,
+      );
+
+      _wallet = await Wallet.create(
+        descriptor: externalDescriptor,
+        changeDescriptor: internalDescriptor,
+        network: Network.Testnet,
+        databaseConfig: const DatabaseConfig.memory(),
+      );
+      await syncWallet(_wallet!);
+      final balance = await _wallet!.getBalance();
+      setState(() {
+        _balanceSats = balance.total;
+        _isLoading = false;
+      });
+
+      getNewAddress(_wallet);
+      
+      log(_balanceSats.toString(), name: "Sats Balance");
+   
+      // syncWallet();
+    } catch (e) {
+      debugPrint('Error initializing wallet: $e');
+      setState(() {
+        _isLoading = false;
+      });
+    }
+
+    // Future<AddressInfo> getNewAddress(Wallet wallet) async {
+    //   final res = await wallet.getAddress(addressIndex: const AddressIndex.new());
+    //   if (kDebugMode) {
+    //     print(res.address);
+    //   }
+    //   setState(() {
+    //     displayText = res.address.toString();
+    //     address = res.address.toString();
+    //   });
+    //   return res;
+    // }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -100,21 +219,42 @@ class _WalletCardState extends State<WalletCard> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Dropdown label
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade900,
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    child: Text(
-                      'Your Ratel Bag II',
-                      style: GoogleFonts.quicksand(
-                        color: Colors.white70,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                  InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return AllBagsscreen();
+                          },
+                        ),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade900,
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Your Ratel Bag II ',
+                            style: GoogleFonts.quicksand(
+                              color: Colors.white70,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Icon(
+                            Icons.keyboard_arrow_down,
+                            color: Colors.white70,
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -133,25 +273,27 @@ class _WalletCardState extends State<WalletCard> {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      //                       Text(
-                      //   _isLoading
-                      //       ? '...'
-                      //       : (_balanceSats! / 100000000).toStringAsFixed(8), // Convert sats to BTC
-                      //   style: GoogleFonts.quicksand(
-                      //     fontSize: 56,
-                      //     color: Colors.white,
-                      //     fontWeight: FontWeight.w600,
-                      //   ),
-                      // ),
-                      // const SizedBox(width: 1),
                       Text(
-                        '0.0042',
+                        _isLoading
+                            ? '...'
+                            : (satsToBtc(_balanceSats?? 0) ).toStringAsFixed(
+                                5,
+                              ), // Convert sats to BTC
                         style: GoogleFonts.quicksand(
                           fontSize: 56,
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
+                      const SizedBox(width: 1),
+                      // Text(
+                      //   '0.0042',
+                      //   style: GoogleFonts.quicksand(
+                      //     fontSize: 56,
+                      //     color: Colors.white,
+                      //     fontWeight: FontWeight.w600,
+                      //   ),
+                      // ),
                       const SizedBox(width: 8),
                       Icon(
                         Icons.visibility_outlined,

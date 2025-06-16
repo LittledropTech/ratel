@@ -14,7 +14,7 @@ class ActionButtons extends StatelessWidget {
     ActionButtonData(iconPath: Assets.icons.receive.path, label: 'Receive'),
     ActionButtonData(
       iconPath: Assets.icons.fluentLearningApp16Regular.path,
-      label: 'Learn',
+      label: '(L)earn',
     ),
     ActionButtonData(iconPath: Assets.icons.uilStatistics.path, label: 'Stats'),
   ];
