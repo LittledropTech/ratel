@@ -1,17 +1,68 @@
-
 // Wallet Card Widget
+import 'dart:developer';
+
+import 'package:bdk_flutter/bdk_flutter.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../gen/assets.gen.dart';
 
-class WalletCard extends StatelessWidget {
+class WalletCard extends StatefulWidget {
   final bool isMobile;
   const WalletCard({required this.isMobile});
 
   @override
+  State<WalletCard> createState() => _WalletCardState();
+}
+
+class _WalletCardState extends State<WalletCard> {
+  //   @override
+  // void initState() {
+  //   super.initState();
+  //   _initializeWalletAndBalance();
+  // }
+  // Wallet? _wallet;
+  // int? _balanceSats;
+  // bool _isLoading = true;
+
+  // Future<void> _initializeWalletAndBalance() async {
+  //   try {
+  //     // This assumes you already created descriptors
+  //     final descriptor = await Descriptor.create(
+  //       descriptor: 'wpkh([fingerprint/derivation]xpub/0/*)', // replace with actual
+  //       network: Network.Testnet,
+  //     );
+
+  //     final changeDescriptor = await Descriptor.create(
+  //       descriptor: 'wpkh([fingerprint/derivation]xpub/1/*)', // replace with actual
+  //       network: Network.Testnet,
+  //     );
+
+  //     _wallet = await Wallet.create(
+  //       descriptor: descriptor,
+  //       changeDescriptor: changeDescriptor,
+  //       network: Network.Testnet,
+  //       databaseConfig: const DatabaseConfig.memory(),
+  //     );
+
+  //     final balance = await _wallet!.getBalance();
+  //     setState(() {
+  //       _balanceSats = balance.total;
+  //       _isLoading = false;
+  //     });
+
+  //     log(_balanceSats.toString());
+  //   } catch (e) {
+  //     debugPrint('Error initializing wallet: $e');
+  //     setState(() {
+  //       _isLoading = false;
+  //     });
+  //   }
+  // }
+
+  @override
   Widget build(BuildContext context) {
-    // Decorations for green leaves shapes - custom painter
     return Container(
       decoration: BoxDecoration(
         color: Colors.black,
@@ -58,9 +109,9 @@ class WalletCard extends StatelessWidget {
                       color: Colors.grey.shade900,
                       borderRadius: BorderRadius.circular(50),
                     ),
-                    child:  Text(
+                    child: Text(
                       'Your Ratel Bag II',
-                      style:  GoogleFonts.quicksand(
+                      style: GoogleFonts.quicksand(
                         color: Colors.white70,
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -82,8 +133,18 @@ class WalletCard extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
+                      //                       Text(
+                      //   _isLoading
+                      //       ? '...'
+                      //       : (_balanceSats! / 100000000).toStringAsFixed(8), // Convert sats to BTC
+                      //   style: GoogleFonts.quicksand(
+                      //     fontSize: 56,
+                      //     color: Colors.white,
+                      //     fontWeight: FontWeight.w600,
+                      //   ),
+                      // ),
                       // const SizedBox(width: 1),
-                       Text(
+                      Text(
                         '0.0042',
                         style: GoogleFonts.quicksand(
                           fontSize: 56,
@@ -106,9 +167,9 @@ class WalletCard extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                       Text(
+                      Text(
                         '= \$285.32 - Decent, not rich.',
-                        style:  GoogleFonts.quicksand(
+                        style: GoogleFonts.quicksand(
                           color: Colors.white70,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
@@ -136,7 +197,6 @@ class WalletCard extends StatelessWidget {
                 ],
               ),
             ),
-     
           ],
         ),
       ),

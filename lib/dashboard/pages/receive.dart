@@ -114,6 +114,8 @@ class _ReceiveBitcoinScreenState extends State<ReceiveBitcoinScreen> {
       color: Colors.black87,
     );
     return Scaffold(
+        backgroundColor: kwhitecolor,
+
       appBar: AppBar(
         backgroundColor: kwhitecolor,
         elevation: 0,
