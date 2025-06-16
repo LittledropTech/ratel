@@ -60,7 +60,7 @@ int btcToSats(double btcAmount) {
 }
 
 // convert from satoshis to BTC
-double satsToBtc(int sats) {
+double satsToBtc(num sats) {
   return sats / 100000000;
   }
 

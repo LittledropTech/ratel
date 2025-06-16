@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:bdk_flutter/bdk_flutter.dart';
@@ -8,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
 import '../../gen/assets.gen.dart';
 import '../../utils/theme.dart'; // Adjust path based on your structure
 
@@ -35,6 +37,25 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
     });
   }
 
+      Future<double> fetchRecommendedFeeRate() async {
+  try {
+    final response = await http.get(
+      Uri.parse('https://mempool.space/api/v1/fees/recommended'),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      // Use halfHourFee or fastestFee as per your preference
+      return data['halfHourFee'].toDouble(); // e.g., 12.5
+    } else {
+      throw Exception("Failed to fetch fee rate");
+    }
+  } catch (e) {
+    // Return a fallback default if API fails
+    return 10.0;
+  }
+}
+
   void _sendBitcoin()async {
     final address = addressController.text.trim();
     final amount = amountController.text.trim();
@@ -45,23 +66,34 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
       return;
     }
 
-  String  txId = await  sendBitcoin(
-      amountInSats: btcToSats(double.parse(amount)),
-      recipientAddress: address,
-      wallet: _wallet!,
-      feeRate: 1.5,
-    );
 
-    if(txId.isNotEmpty){
+
+  // String  txId = await  sendBitcoin(
+  //     amountInSats: btcToSats(double.parse(amount)),
+  //     recipientAddress: address,
+  //     wallet: _wallet!,
+  //     feeRate: 1.5,
+  //   );
+
+    // if(txId.isNotEmpty){
+
+    double feeRate = await fetchRecommendedFeeRate();
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => SendSummaryScreen()),
+      MaterialPageRoute(builder: (context) => SendSummaryScreen(
+        memo:memoController.text,
+        recipientAddress:  address,
+        amountInBTC: amount,
+        networkFee: feeRate.toString(),
+        wallet: _wallet!,
+      
+      )),
     );
-    } else{
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to send Bitcoin")),
-        );
-    }
+    // } else{
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     const SnackBar(content: Text("Failed to send Bitcoin")),
+    //     );
+    // }
 
  
   }
@@ -142,215 +174,59 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
     }
   }
 
-  //     sendTx(String addressStr, int amount) async {
-  //   try {
-  //     final txBuilder = TxBuilder();
-  //     final address =
-  //         await Address.create(address: addressController.text);
 
-  //     final script = address.scriptPubkey();
-  //     final txBuilderResult = await txBuilder
-  //         .addRecipient(script, BigInt.from(num.parse(amount)))
-  //         .feeRate(1.0)
-  //         .finish(_wallet!);
-  //     final psbt = txBuilderResult;
-  //     final isFinalized = await wallet.sign(psbt: psbt);
-  //     if (isFinalized) {
-  //       final tx = psbt.extractTx();
-  //       await blockchain.broadcast(transaction: tx);
-  //       setState(() {
-  //         displayText = "Successfully broadcast $amount Sats to $addressStr";
-  //       });
-  //     } else {
-  //       setState(() {
-  //         displayText = "psbt not finalized";
-  //       });
-  //     }
-  //   } on Exception catch (e) {
-  //     setState(() {
-  //       displayText = "Error: ${e.toString()}";
-  //     });
-  //   }
-  // }
+ 
 
-  // Send Bitcoin to an address
-  // Future<String> sendBitcoin({
-  //   required Wallet wallet,
-  //   required String recipientAddress,
-  //   required int amountInSats,
-  //   double? feeRate, // Optional custom fee rate (sat/vB)
-  // }) async {
-  //   try {
-  //     // Create the recipient address object
-  //     final address = await Address.create(address: recipientAddress);
-
-  //     // Create transaction builder
-  //     final txBuilder = TxBuilder();
-
-  //     // Add recipient and amount
-  //     final script =  address as Script;
-  //     txBuilder.addRecipient(script, amountInSats);
-
-  //     // Set fee rate if provided, otherwise use default
-  //     if (feeRate != null) {
-  //       txBuilder.feeRate(feeRate);
-  //     } else {
-  //       // Use a reasonable default fee rate (e.g., 1.5 sat/vB for testnet)
-  //       txBuilder.feeRate(1.5);
-  //     }
-
-  //     // Build the transaction
-  //     final txBuilderResult = await txBuilder.finish(wallet);
-  //     final psbt = txBuilderResult.psbt;
-
-  //     // Sign the transaction
-  //     final isFinalized = await wallet.sign(psbt: psbt);
-  //     final String txId = await isFinalized.txId();
-  //     if (txId.isEmpty) {
-  //       throw Exception('Failed to finalize transaction');
-  //     }
-
-  //     // Extract the signed transaction
-  //     final signedTx = await psbt.extractTx();
-
-  //     // Create blockchain connection for broadcasting
-  //     final blockchain = await Blockchain.create(
-  //       config: BlockchainConfig.electrum(
-  //         config: ElectrumConfig(
-  //           url: 'ssl://electrum.blockstream.info:60002',
-  //           socks5: null,
-  //           retry: 5,
-  //           timeout: 10,
-  //           stopGap: 10,
-  //           validateDomain: false,
-  //         ),
-  //       ),
-  //     );
-
-  //     // Broadcast the transaction
-  //     final txid = await blockchain.broadcast(signedTx);
-
-  //     return txid;
-
-  //   } catch (e) {
-  //     throw Exception('Failed to send Bitcoin: $e');
-  //   }
-  // }
-
-  // Send Bitcoin to an address
-  Future<String> sendBitcoin({
-    required Wallet wallet,
-    required String recipientAddress,
-    required int amountInSats,
-    double? feeRate,
-  }) async {
-    try {
-      // Create the recipient address object
-      final address = await Address.create(address: recipientAddress);
-
-      // Create transaction builder
-      final txBuilder = TxBuilder();
-
-      // Add recipient and amount
-      final script = await address.scriptPubKey();
-      txBuilder.addRecipient(script, amountInSats);
-
-      // Set fee rate if provided, otherwise use default
-      if (feeRate != null) {
-        txBuilder.feeRate(feeRate);
-      } else {
-        txBuilder.feeRate(1.5);
-      }
-
-      // Build the transaction
-      final txBuilderResult = await txBuilder.finish(wallet);
-      final psbt = txBuilderResult.psbt;
-
-      // Sign the transaction
-      final signedPsbt = await wallet.sign(psbt: psbt);
-
-      // Extract the signed transaction
-      final signedTx = await signedPsbt.extractTx();
-
-      // Get transaction ID before broadcasting
-      final txid = await signedTx.txid();
-
-      // Create blockchain connection for broadcasting
-      final blockchain = await Blockchain.create(
-        config: BlockchainConfig.electrum(
-          config: ElectrumConfig(
-            url: 'ssl://electrum.blockstream.info:60002',
-            socks5: null,
-            retry: 5,
-            timeout: 10,
-            stopGap: 10,
-            validateDomain: false,
-          ),
-        ),
-      );
-
-      // Broadcast the transaction
-      await blockchain.broadcast(signedTx);
-
-      return txid;
-    } catch (e) {
-       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text("$e")),
-        );
-      throw Exception('Failed to send Bitcoin: $e');
-    }
-  }
-
-  Future<String> sendBitcoinWithFeeEstimation({
-  required Wallet wallet,
-  required String recipientAddress,
-  required double amountInBtc, 
-  required String priority, // "low", "medium", "high"
-}) async {
-  try {
-    // Create blockchain connection for fee estimation
-    final blockchain = await Blockchain.create(
-      config: BlockchainConfig.electrum(
-        config: ElectrumConfig(
-          url: 'ssl://electrum.blockstream.info:60002',
-          socks5: null,
-          retry: 5,
-          timeout: 10,
-          stopGap: 10,
-          validateDomain: false,
-        ),
-      ),
-    );
+//   Future<String> sendBitcoinWithFeeEstimation({
+//   required Wallet wallet,
+//   required String recipientAddress,
+//   required double amountInBtc, 
+//   required String priority, // "low", "medium", "high"
+// }) async {
+//   try {
+//     // Create blockchain connection for fee estimation
+//     final blockchain = await Blockchain.create(
+//       config: BlockchainConfig.electrum(
+//         config: ElectrumConfig(
+//           url: 'ssl://electrum.blockstream.info:60002',
+//           socks5: null,
+//           retry: 5,
+//           timeout: 10,
+//           stopGap: 10,
+//           validateDomain: false,
+//         ),
+//       ),
+//     );
     
-    // Estimate fee based on priority
-    int confirmationTarget;
-    switch (priority.toLowerCase()) {
-      case 'high':
-        confirmationTarget = 1; // Next block
-        break;
-      case 'medium':
-        confirmationTarget = 6; // ~1 hour
-        break;
-      case 'low':
-        confirmationTarget = 144; // ~24 hours
-        break;
-      default:
-        confirmationTarget = 6;
-    }
+//     // Estimate fee based on priority
+//     int confirmationTarget;
+//     switch (priority.toLowerCase()) {
+//       case 'high':
+//         confirmationTarget = 1; // Next block
+//         break;
+//       case 'medium':
+//         confirmationTarget = 6; // ~1 hour
+//         break;
+//       case 'low':
+//         confirmationTarget = 144; // ~24 hours
+//         break;
+//       default:
+//         confirmationTarget = 6;
+//     }
     
-    final feeRate = await blockchain.estimateFee(confirmationTarget);
+//     final feeRate = await blockchain.estimateFee(confirmationTarget);
     
-    return await sendBitcoin(
-      wallet: wallet,
-      recipientAddress: recipientAddress,
-      amountInSats: btcToSats(amountInBtc), 
-      feeRate: feeRate.hashCode.toDouble(),
-    );
+//     return await sendBitcoin(
+//       wallet: wallet,
+//       recipientAddress: recipientAddress,
+//       amountInSats: btcToSats(amountInBtc), 
+//       feeRate: feeRate.hashCode.toDouble(),
+//     );
     
-  } catch (e) {
-    throw Exception('Failed to send Bitcoin with fee estimation: $e');
-  }
-}
+//   } catch (e) {
+//     throw Exception('Failed to send Bitcoin with fee estimation: $e');
+//   }
+// }
 
   @override
   Widget build(BuildContext context) {

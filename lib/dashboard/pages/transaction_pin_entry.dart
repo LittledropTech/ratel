@@ -7,7 +7,9 @@ import 'package:bitsure/utils/theme.dart';
 import 'package:flutter/material.dart';
 
 class PinEntryScreen extends StatefulWidget {
-  const PinEntryScreen({super.key});
+    final Function(BuildContext context, {required String transactionPin})?
+      funcCall;
+  const PinEntryScreen({super.key, required this.funcCall});
 
   @override
   _PinEntryScreenState createState() => _PinEntryScreenState();
