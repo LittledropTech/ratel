@@ -1,3 +1,5 @@
+
+import 'package:bitsure/dashboard/pages/dashboard.dart';
 import 'package:bitsure/onboarding/restorewalletflow/eneter_password.dart';
 import 'package:bitsure/onboarding/restorewalletflow/mannual_restore.dart';
 import 'package:bitsure/onboarding/restorewalletflow/poem_restore.dart';

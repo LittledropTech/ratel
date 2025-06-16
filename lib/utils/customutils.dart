@@ -1,6 +1,7 @@
 import 'package:bitsure/utils/textstyle.dart';
 import 'package:bitsure/utils/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 Widget custombuttons(
   double height,
@@ -78,6 +79,28 @@ customNetworkErrorDialog(BuildContext context, {String? message}) {
       );
     },
   );
+}
+
+
+String formatNumber(num? value, {int decimalDigits = 2, bool short = false}) {
+  if (value == null) return "--";
+
+  bool hasDecimal = value % 1 != 0;
+
+  if (short) {
+    // If there's no decimal part, return as integer
+    if (!hasDecimal) {
+      return NumberFormat.decimalPattern().format(value);
+    } else {
+      return NumberFormat("0.00").format(value);
+    }
+  } else {
+    // Show no decimal if value is a whole number
+    return NumberFormat.currency(
+      decimalDigits: hasDecimal ? decimalDigits : 0,
+      symbol: "",
+    ).format(value);
+  }
 }
 
 customErrorShowMeme(BuildContext context) {

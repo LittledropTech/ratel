@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:bitsure/dashboard/dashboard.dart';
+import 'package:bitsure/dashboard/pages/dashboard.dart';
 import 'package:bitsure/onboarding/subscreens/pinscreen.dart';
 import 'package:bitsure/provider/authservice_provider.dart';
 import 'package:bitsure/provider/wallet_authprovider.dart';
@@ -75,9 +75,6 @@ class _AuthPageState extends State<AuthPage> {
           return Introscreen();
           default:return Splashscreen();
         }
-      
-
-
     });
   }
 }

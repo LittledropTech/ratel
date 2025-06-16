@@ -1,5 +1,5 @@
 import 'package:bdk_flutter/bdk_flutter.dart';
-import 'package:bitsure/dashboard/dashboard.dart';
+import 'package:bitsure/dashboard/pages/dashboard.dart';
 import 'package:provider/provider.dart';
 import '../../provider/wallet_authprovider.dart';
 import 'package:bitsure/utils/customutils.dart';

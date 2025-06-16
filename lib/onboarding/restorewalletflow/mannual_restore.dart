@@ -1,3 +1,4 @@
+import 'package:bitsure/dashboard/pages/dashboard.dart';
 import 'package:bitsure/onboarding/restorewalletflow/restore_new_code.dart';
 import 'package:flutter/material.dart';
 import 'package:bdk_flutter/bdk_flutter.dart' as bdk;
