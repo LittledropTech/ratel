@@ -6,20 +6,19 @@ class RecentChaosList extends StatelessWidget {
 
   const RecentChaosList({
     super.key,
-    this.items = const [
-      ChaosItem(isUp: true, date: 'Today', from: 'Ratel62', amount: '+0.001'),
-      ChaosItem(isUp: false, date: 'Today', from: 'Ratel62', amount: '+0.001'),
-      ChaosItem(isUp: false, date: 'Today', from: 'Ratel62', amount: '+0.001'),
-    ],
+    required this.items,
   });
 
   @override
   Widget build(BuildContext context) {
+    if (items.isEmpty) {
+      return const Center(child: Text("No recent transactions"));
+    }
+
     return ListView.builder(
       itemCount: items.length,
       shrinkWrap: true,
-      physics:
-          const NeverScrollableScrollPhysics(), // prevents nested scroll conflict
+      physics: const NeverScrollableScrollPhysics(),
       itemBuilder: (context, index) {
         final item = items[index];
         return ListTile(
@@ -32,7 +31,7 @@ class RecentChaosList extends StatelessWidget {
               backgroundColor: Colors.grey.shade200,
               child: Icon(
                 item.isUp ? Icons.arrow_upward : Icons.arrow_downward,
-                color: item.isUp ? Colors.red.shade700 : Colors.green.shade700,
+                color: item.isUp ? Colors.green.shade700 : Colors.red.shade700,
                 size: 24,
               ),
             ),
@@ -46,7 +45,7 @@ class RecentChaosList extends StatelessWidget {
             ),
           ),
           subtitle: Text(
-            'from ${item.from}',
+            'From ${item.from}',
             style: GoogleFonts.quicksand(
               fontWeight: FontWeight.w400,
               fontSize: 12,
@@ -79,4 +78,35 @@ class ChaosItem {
     required this.from,
     required this.amount,
   });
+}
+
+class RecentChaosHeader extends StatelessWidget {
+  const RecentChaosHeader({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          'Recent Activity',
+          style: GoogleFonts.quicksand(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: Colors.black87,
+          ),
+        ),
+        TextButton(
+          onPressed: () {},
+          child: Text(
+            'See All',
+            style: GoogleFonts.quicksand(
+              fontWeight: FontWeight.w500,
+              color: Colors.blue.shade700,
+            ),
+          ),
+        )
+      ],
+    );
+  }
 }

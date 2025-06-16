@@ -81,9 +81,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     child: Column(
                       children: [
-                        RecentChaosHeader(),
                         // Recent chaos list
-                        RecentChaosList(),
+                        RecentChaosList(items: [
+                        ],),
                       ],
                     ),
                   ),
@@ -121,7 +121,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Hi,',
+              'Hi, Onionsman',
               style: GoogleFonts.quicksand(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,

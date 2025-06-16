@@ -85,4 +85,11 @@ Future<void> registerUserOnBackend(Network network) async {
 }
 
 
+// Get transaction history
+Future<List<TransactionDetails>> getTransactionHistory(Wallet wallet) async {
+  return await wallet.listTransactions(false);
+}
+
+
+
 }
