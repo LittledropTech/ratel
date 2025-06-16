@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:bitsure/dashboard/pages/sat_sent.dart';
 import 'package:bitsure/gen/assets.gen.dart';
 import 'package:bitsure/utils/customutils.dart';
@@ -118,9 +120,14 @@ class _PinEntryScreenState extends State<PinEntryScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               child: Row(
                 children: [
-                  CircleAvatar(
-                    backgroundColor: Colors.white,
-                    child: const Icon(Icons.arrow_back, color: Colors.black),
+                  InkWell(
+                    onTap: (){
+                      Navigator.pop(context);
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: Colors.white,
+                      child:  Icon( Platform.isIOS? Icons.arrow_back_ios: Icons.arrow_back, color: Colors.black),
+                    ),
                   ),
                 ],
               ),

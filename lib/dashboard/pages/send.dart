@@ -1,3 +1,4 @@
+import 'package:bitsure/dashboard/pages/scan_qr.dart';
 import 'package:bitsure/dashboard/pages/send_summary.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -167,7 +168,26 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
 
                       InkWell(
                         child: Assets.icons.mingcuteScanLine.svg(),
-                        onTap: () async {},
+                        onTap: () async {
+                          final scannedUsername = await Navigator.push<String>(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const QrScannerScreen(),
+                            ),
+                          );
+
+                          if (scannedUsername != null &&
+                              scannedUsername.isNotEmpty) {
+                            final cleanUsername =
+                                scannedUsername.startsWith('@')
+                                ? scannedUsername
+                                : '@$scannedUsername';
+
+                            setState(() {
+                              addressController.text = cleanUsername;
+                            });
+                          }
+                        },
                       ),
                       SizedBox(width: 10),
                     ],
