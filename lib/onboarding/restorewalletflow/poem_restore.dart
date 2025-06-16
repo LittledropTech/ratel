@@ -35,7 +35,6 @@ class _PoemRestoreScreenState extends State<PoemRestoreScreen> {
           decoration: const InputDecoration(hintText: 'Backup password'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           custombuttons(40, 500, BoxDecoration(
             color:klightbluecolor,
             borderRadius: BorderRadius.circular(10)

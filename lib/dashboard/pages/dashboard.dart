@@ -1,3 +1,4 @@
+import 'package:bitsure/profile/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -35,19 +36,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     children: [
                       // Header row with avatar, greeting and bell icon
                       _buildHeader(context, isMobile),
-                  
+
                       const SizedBox(height: 24),
-                  
+
                       // Wallet Info Card
                       WalletCard(isMobile: isMobile),
-                  
+
                       const SizedBox(height: 32),
-                  
+
                       // Motivational quote text
-                       Center(
+                      Center(
                         child: Text(
                           '"Up 3% this week. You’re basically Warren Buffet',
-                          style:  GoogleFonts.quicksand(
+                          style: GoogleFonts.quicksand(
                             fontSize: 14,
                             color: Colors.black,
                             fontWeight: FontWeight.w600,
@@ -55,14 +56,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           textAlign: TextAlign.center,
                         ),
                       ),
-                  
+
                       const SizedBox(height: 32),
-                  
+
                       // Action buttons section
                       ActionButtons(),
-                  
+
                       const SizedBox(height: 8),
-                  
+
                       // Recent chaos header with see all
                     ],
                   ),
@@ -100,20 +101,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
     children: [
       Semantics(
         label: 'User profile picture',
-        child: CircleAvatar(
-          radius: 24,
-          backgroundImage: AssetImage(Assets.images.balablu.path),
-          backgroundColor: Colors.grey.shade300,
+        child: InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => ProfileScreen()),
+            );
+          },
+          child: CircleAvatar(
+            radius: 24,
+            backgroundImage: AssetImage(Assets.images.balablu.path),
+            backgroundColor: Colors.grey.shade300,
+          ),
         ),
       ),
       const SizedBox(width: 12),
       Expanded(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children:  [
+          children: [
             Text(
               'Hi, Onionsman',
-              style:  GoogleFonts.quicksand(
+              style: GoogleFonts.quicksand(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
@@ -122,7 +131,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             SizedBox(height: 3),
             Text(
               'GM Bestie, make the moves',
-              style:  GoogleFonts.quicksand(
+              style: GoogleFonts.quicksand(
                 fontSize: 13,
                 color: Colors.black54,
                 fontWeight: FontWeight.w400,
