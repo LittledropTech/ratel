@@ -1,8 +1,6 @@
 import 'dart:convert';
 
-import 'package:bdk_flutter/bdk_flutter.dart';
 import 'package:bitsure/dashboard/dashboard.dart';
-import 'package:bitsure/provider/wallet_authprovider.dart';
 import 'package:bitsure/utils/customutils.dart';
 import 'package:bitsure/utils/textstyle.dart';
 import 'package:bitsure/utils/theme.dart';
@@ -13,6 +11,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
 class RestoreNewCode extends StatefulWidget {
+ 
  const RestoreNewCode({super.key});
 
   @override
@@ -29,7 +28,7 @@ class _RestoreNewCodeState extends State<RestoreNewCode> {
   String hashPin(String pin) {
     final bytes = utf8.encode(pin);
     final digest = sha256.convert(bytes);
-    return digest.toString(); // returns the hash as a hex string
+    return digest.toString();
   }
 
   void _handlePinCompleted(String value) async {

@@ -4,7 +4,7 @@ import 'package:bitsure/onboarding/subscreens/pinscreen.dart';
 import 'package:bitsure/provider/authservice_provider.dart';
 import 'package:bitsure/provider/wallet_authprovider.dart';
 import 'package:bitsure/provider/backup_logic_provider.dart';
-import 'package:bitsure/onboarding/screens/introprovider.dart';
+import 'package:bitsure/provider/introprovider.dart';
 import '../onboarding/screens/introscreen.dart';
 import '../onboarding/screens/splashscreen.dart';
 import 'package:bitsure/utils/theme.dart';
@@ -58,11 +58,9 @@ class MyApp extends StatelessWidget {
 }
  class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
-
   @override
   State<AuthPage> createState() => _AuthPageState();
 }
-
 class _AuthPageState extends State<AuthPage> {
   @override
   Widget build(BuildContext context) {

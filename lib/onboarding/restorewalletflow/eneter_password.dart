@@ -7,7 +7,7 @@ class Restorewalletvalidatescreen extends StatefulWidget {
   final String  pagetext ;
   final String text;
   
-   Restorewalletvalidatescreen({super.key, required this.subpagetext, required this.pagetext, required this.text,});
+   const Restorewalletvalidatescreen({super.key, required this.subpagetext, required this.pagetext, required this.text,});
 
   @override
   State<Restorewalletvalidatescreen> createState() => _RestorewalletvalidatescreenState();

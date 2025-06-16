@@ -1,5 +1,3 @@
-import '../screens/backupscreen.dart';
-import 'package:bitsure/utils/textstyle.dart';
 import 'package:bitsure/utils/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
@@ -80,7 +78,7 @@ class _ManuallybackupscreenState extends State<Manuallybackupscreen> {
                   spacing: 10,
                   runSpacing: 10,
                   children: List.generate(widget.mnemonicWords.length, (index) {
-                    return Container(
+                    return SizedBox(
                       width: 106, // Fixed width for all chips
                       height: 45, // Fixed height for all chips
                       child: Chip(
@@ -90,7 +88,7 @@ class _ManuallybackupscreenState extends State<Manuallybackupscreen> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        label: Container(
+                        label: SizedBox(
                           width: double.infinity,
                           height: double.infinity,
                           child: Center(
@@ -99,7 +97,7 @@ class _ManuallybackupscreenState extends State<Manuallybackupscreen> {
                               children: [
                                 Text('${index + 1}. ',style: TextStyle(color: klightbluecolor),),
                                 Text(
-                                  "${widget.mnemonicWords[index]}",
+                                  widget.mnemonicWords[index],
                                   style: const TextStyle(
                                     fontSize:
                                         14, // Slightly smaller to fit better
