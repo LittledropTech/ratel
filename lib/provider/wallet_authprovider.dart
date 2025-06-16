@@ -82,25 +82,6 @@ Future<void> registerUserOnBackend(Network network) async {
   };
 
   print('🚀 Sending payload to backend: $payload');
-  await sendToBackend(payload);
-}
-
-/// Sends user ID and full descriptors to your backend
-Future<void> sendToBackend(Map<String, dynamic> payload) async {
-  //sending my users decriptor to the backend 
-  const String url = 'https://test-api-ratle.littledrop.co'; 
-
-  final response = await http.post(
-    Uri.parse(url),
-    headers: {'Content-Type': 'application/json'},
-    body: jsonEncode(payload),
-  );
-
-  if (response.statusCode != 200 && response.statusCode ==201) {
-    throw Exception('Failed to register user on backend: with statusCode ${response.statusCode}:with body ${response.body}');
-  } else {
-    print('Successfully registered user on backend');
-  }
 }
 
 

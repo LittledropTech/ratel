@@ -16,6 +16,8 @@ class SendSummaryScreen extends StatefulWidget {
   final String memo;
   final Wallet wallet;
   final String networkFee;
+  final Network network;
+
   const SendSummaryScreen({
     super.key,
     required this.amountInBTC,
@@ -23,6 +25,7 @@ class SendSummaryScreen extends StatefulWidget {
     required this.memo,
     required this.wallet,
     required this.networkFee,
+    required this.network,
   });
 
   @override
@@ -30,94 +33,75 @@ class SendSummaryScreen extends StatefulWidget {
 }
 
 class _SendSummaryScreenState extends State<SendSummaryScreen> {
-  final network = Network.Testnet;
+  Future<double> fetchRecommendedFeeRate() async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://mempool.space/api/v1/fees/recommended'),
+      );
 
-Future<double> fetchRecommendedFeeRate() async {
-  try {
-    final response = await http.get(
-      Uri.parse('https://mempool.space/api/v1/fees/recommended'),
-    );
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      // Use halfHourFee or fastestFee as per your preference
-      return data['halfHourFee'].toDouble(); // e.g., 12.5
-    } else {
-      throw Exception("Failed to fetch fee rate");
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['halfHourFee'].toDouble(); // e.g., 12.5
+      } else {
+        throw Exception("Failed to fetch fee rate");
+      }
+    } catch (e) {
+      return 10.0;
     }
-  } catch (e) {
-    // Return a fallback default if API fails
-    return 10.0;
   }
-}
 
-Future<String> sendBitcoin({
-  required BuildContext context,
-  required Wallet wallet,
-  required String recipientAddress,
-  required int amountInSats,
-  double? feeRate, // Optional override
-}) async {
-  try {
-    // Create the recipient address object
-    final address = await Address.create(address: recipientAddress);
+  Future<String> sendBitcoin({
+    required BuildContext context,
+    required Wallet wallet,
+    required String recipientAddress,
+    required int amountInSats,
+    double? feeRate,
+  }) async {
+    try {
+      final address = await Address.create(address: recipientAddress);
+      final txBuilder = TxBuilder();
+      final script = await address.scriptPubKey();
 
-    // Create the transaction builder
-    final txBuilder = TxBuilder();
+      txBuilder.addRecipient(script, amountInSats);
+      final dynamicFeeRate = feeRate ?? await fetchRecommendedFeeRate();
+      txBuilder.feeRate(dynamicFeeRate);
 
-    // Add recipient and amount
-    final script = await address.scriptPubKey();
-    txBuilder.addRecipient(script, amountInSats);
+      final txBuilderResult = await txBuilder.finish(wallet);
+      final psbt = txBuilderResult.psbt;
+      final signedPsbt = await wallet.sign(psbt: psbt);
+      final signedTx = await signedPsbt.extractTx();
+      final txid = await signedTx.txid();
 
-    // Fetch or use provided fee rate
-    final dynamicFeeRate = feeRate ?? await fetchRecommendedFeeRate();
-    txBuilder.feeRate(dynamicFeeRate);
-
-    // Build the transaction
-    final txBuilderResult = await txBuilder.finish(wallet);
-    final psbt = txBuilderResult.psbt;
-
-    // Sign the transaction
-    final signedPsbt = await wallet.sign(psbt: psbt);
-
-    // Extract the signed transaction
-    final signedTx = await signedPsbt.extractTx();
-
-    // Get transaction ID before broadcasting
-    final txid = await signedTx.txid();
-
-    // Create blockchain connection for broadcasting
-    final blockchain = await Blockchain.create(
-      config: BlockchainConfig.electrum(
-        config: ElectrumConfig(
-          url:  network == Network.Testnet?  'ssl://electrum.blockstream.info:60004': 'ssl://electrum.blockstream.info:60002',
-          socks5: null,
-          retry: 5,
-          timeout: 10,
-          stopGap: 10,
-          validateDomain: false,
+      final blockchain = await Blockchain.create(
+        config: BlockchainConfig.electrum(
+          config: ElectrumConfig(
+            url: widget.network == Network.Testnet
+                ? 'ssl://electrum.blockstream.info:60004'
+                : 'ssl://electrum.blockstream.info:60002',
+            socks5: null,
+            retry: 5,
+            timeout: 10,
+            stopGap: 10,
+            validateDomain: false,
+          ),
         ),
-      ),
-    );
+      );
 
-    // Broadcast the transaction
-    await blockchain.broadcast(signedTx);
+      await blockchain.broadcast(signedTx);
 
-    // Notify success
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Transaction sent!\nTXID: $txid")),
-    );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Transaction sent!\nTXID: $txid")),
+      );
 
-    return txid;
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Error: $e")),
-    );
-    throw Exception('Failed to send Bitcoin: $e');
+      return txid;
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
+      throw Exception('Failed to send Bitcoin: $e');
+    }
   }
-}
 
-  // Send Bitcoin to an address
   @override
   Widget build(BuildContext context) {
     final titleStyle = GoogleFonts.quicksand(
@@ -127,7 +111,6 @@ Future<String> sendBitcoin({
     );
     return Scaffold(
       backgroundColor: kwhitecolor,
-
       appBar: AppBar(
         backgroundColor: kwhitecolor,
         elevation: 0,
@@ -138,12 +121,9 @@ Future<String> sendBitcoin({
         child: Column(
           children: [
             const SizedBox(height: 80),
-            // Avatar
             CircleAvatar(
               radius: 50,
-              backgroundImage: AssetImage(
-                Assets.images.greenFlag.path,
-              ), // Replace with your image
+              backgroundImage: AssetImage(Assets.images.greenFlag.path),
             ),
             const SizedBox(height: 12),
             const Text(
@@ -166,7 +146,7 @@ Future<String> sendBitcoin({
             const SizedBox(height: 16),
             SummaryTile(
               title: 'Network Fee',
-              value: '${satsToBtc(num.parse(widget.networkFee))} Sats (Fast AF)',
+              value: '${widget.networkFee} sats (Fast AF)',
             ),
             const Spacer(),
             Container(
@@ -193,7 +173,8 @@ Future<String> sendBitcoin({
                       context: context,
                       wallet: widget.wallet,
                       recipientAddress: widget.recipientAddress,
-                      amountInSats: btcToSats(double.parse(widget.amountInBTC)),
+                      amountInSats:
+                          btcToSats(double.parse(widget.amountInBTC)),
                     );
                   }
 
@@ -204,13 +185,6 @@ Future<String> sendBitcoin({
                           PinEntryScreen(funcCall: createTransaction),
                     ),
                   );
-
-                  //  Navigator.push(
-                  //     context,
-                  //     MaterialPageRoute(
-                  //       builder: (context) => PinEntryScreen(),
-                  //     ),
-                  //   );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.transparent,

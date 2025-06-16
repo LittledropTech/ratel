@@ -67,16 +67,6 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
     }
 
 
-
-  // String  txId = await  sendBitcoin(
-  //     amountInSats: btcToSats(double.parse(amount)),
-  //     recipientAddress: address,
-  //     wallet: _wallet!,
-  //     feeRate: 1.5,
-  //   );
-
-    // if(txId.isNotEmpty){
-
     double feeRate = await fetchRecommendedFeeRate();
     Navigator.push(
       context,
@@ -86,14 +76,11 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
         amountInBTC: amount,
         networkFee: feeRate.toString(),
         wallet: _wallet!,
+        network: Network.Testnet ,
       
       )),
     );
-    // } else{
-    //   ScaffoldMessenger.of(context).showSnackBar(
-    //     const SnackBar(content: Text("Failed to send Bitcoin")),
-    //     );
-    // }
+
 
  
   }
@@ -173,60 +160,6 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
       });
     }
   }
-
-
- 
-
-//   Future<String> sendBitcoinWithFeeEstimation({
-//   required Wallet wallet,
-//   required String recipientAddress,
-//   required double amountInBtc, 
-//   required String priority, // "low", "medium", "high"
-// }) async {
-//   try {
-//     // Create blockchain connection for fee estimation
-//     final blockchain = await Blockchain.create(
-//       config: BlockchainConfig.electrum(
-//         config: ElectrumConfig(
-//           url: 'ssl://electrum.blockstream.info:60002',
-//           socks5: null,
-//           retry: 5,
-//           timeout: 10,
-//           stopGap: 10,
-//           validateDomain: false,
-//         ),
-//       ),
-//     );
-    
-//     // Estimate fee based on priority
-//     int confirmationTarget;
-//     switch (priority.toLowerCase()) {
-//       case 'high':
-//         confirmationTarget = 1; // Next block
-//         break;
-//       case 'medium':
-//         confirmationTarget = 6; // ~1 hour
-//         break;
-//       case 'low':
-//         confirmationTarget = 144; // ~24 hours
-//         break;
-//       default:
-//         confirmationTarget = 6;
-//     }
-    
-//     final feeRate = await blockchain.estimateFee(confirmationTarget);
-    
-//     return await sendBitcoin(
-//       wallet: wallet,
-//       recipientAddress: recipientAddress,
-//       amountInSats: btcToSats(amountInBtc), 
-//       feeRate: feeRate.hashCode.toDouble(),
-//     );
-    
-//   } catch (e) {
-//     throw Exception('Failed to send Bitcoin with fee estimation: $e');
-//   }
-// }
 
   @override
   Widget build(BuildContext context) {

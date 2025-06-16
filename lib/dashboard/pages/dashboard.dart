@@ -121,7 +121,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Hi, Onionsman',
+              'Hi,',
               style: GoogleFonts.quicksand(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
