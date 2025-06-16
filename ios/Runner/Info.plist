@@ -46,11 +46,11 @@
     <key>UIApplicationSupportsIndirectInputEvents</key>
     <true/>
     
-    <!-- ✅ START: GOOGLE SIGN-IN CONFIGURATION ✅ -->
-    <!-- You must replace the two placeholder strings below with your own keys -->
+    <!-- ✅ START: GOOGLE SIGN-IN CONFIGURATION (Corrected) ✅ -->
     
     <key>GIDClientID</key>
-    <string>PASTE_YOUR_CLIENT_ID_HERE</string>
+    <!-- This is the correct place for your Client ID -->
+    <string>1093704872590-po9i7g23gl9gm3p0517040ime78envei.apps.googleusercontent.com</string>
     
     <key>CFBundleURLTypes</key>
     <array>
@@ -59,7 +59,8 @@
             <string>Editor</string>
             <key>CFBundleURLSchemes</key>
             <array>
-                <string>1093704872590-po9i7g23gl9gm3p0517040ime78envei.apps.googleusercontent.com</string>
+                <!-- This is the correct place for your REVERSED Client ID -->
+                <string>com.googleusercontent.apps.1093704872590-po9i7g23gl9gm3p0517040ime78envei</string>
             </array>
         </dict>
     </array>
@@ -69,7 +70,6 @@
     <key>LSApplicationQueriesSchemes</key>
     <array>
         <string>google</string>
-        <!-- The reversed client ID is not needed here -->
     </array>
     
     <!-- PERMISSIONS ADDED FOR FILE PICKER & SHARING -->
