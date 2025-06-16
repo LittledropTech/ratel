@@ -2,6 +2,7 @@ import 'package:bitsure/utils/textstyle.dart';
 import 'package:bitsure/utils/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 Widget custombuttons(
   double height,
@@ -69,6 +70,31 @@ customSnackBar(String text, Color colors, BuildContext context) {
     context,
   ).showSnackBar(SnackBar(content: Text(text), backgroundColor: colors));
 }
+
+String formatDateTime(DateTime dateTime) {
+  final now = DateTime.now();
+  final isToday = now.year == dateTime.year &&
+      now.month == dateTime.month &&
+      now.day == dateTime.day;
+
+  final timeFormat = DateFormat('h:mm a'); // e.g. 2:47 PM
+  final formattedTime = timeFormat.format(dateTime);
+
+  if (isToday) {
+    return 'Today, $formattedTime';
+  } else {
+    final dateFormat = DateFormat('MMM d, h:mm a'); // fallback format
+    return dateFormat.format(dateTime);
+  }
+}
+  void launchURL(BuildContext context, url) async {
+    final uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Could not open link')));
+    }
+  }
 
 customNetworkErrorDialog(BuildContext context, {String? message}) {
   showDialog(

@@ -86,7 +86,7 @@ class _ReceiveBitcoinScreenState extends State<ReceiveBitcoinScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(48)),
         child: SizedBox(
           height: 700, // Desired height
-          child: EmojiSelectorScreen(),
+          child: EmojiSelectorScreen(address: userBitcoinAddress,),
         ),
       ),
     );
