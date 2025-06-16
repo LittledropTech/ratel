@@ -31,11 +31,7 @@ void main() async {
     ],child: MyApp(),)
   );
   //Disable screenshot on this app
-  WidgetsBinding.instance.addPostFrameCallback((timeStamp)async{
-    if(Platform.isAndroid){
-      await FlutterWindowManager.addFlags(FlutterWindowManager.FLAG_SECURE);
-    }
-  });
+ 
   
 }
 class MyApp extends StatelessWidget {

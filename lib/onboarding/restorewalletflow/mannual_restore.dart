@@ -164,7 +164,7 @@ class _ManualRestoreScreenState extends State<ManualRestoreScreen> {
                             controller: _controllers[index],
                             textAlign: TextAlign.left,
                             decoration: const InputDecoration(
-                              hintText: 'Word',
+                              hintText: '.........',
                               border: InputBorder.none,
                               isDense: true,
                               contentPadding: EdgeInsets.only(bottom: 2.0),

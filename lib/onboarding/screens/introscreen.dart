@@ -162,7 +162,7 @@ class _IntroscreenState extends State<Introscreen> {
 
                           child: Padding(
                             padding: EdgeInsets.only(
-                              top: 60,
+                              top: 50,
 
                               bottom: size.height * 0.05,
                             ),
