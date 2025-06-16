@@ -74,21 +74,20 @@ class _ReceiveBitcoinScreenState extends State<ReceiveBitcoinScreen> {
   // }
 
   void _shareAsEmoji() {
-showModalBottomSheet(
-  context: context,
-  isScrollControlled: true,
-  shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.vertical(top: Radius.circular(48)),
-  ),
-  builder: (context) => Material(
-    borderRadius: BorderRadius.vertical(top: Radius.circular(48)),
-    child: SizedBox(
-      height: 700, // Desired height
-      child: EmojiSelectorScreen(),
-    ),
-  ),
-);
-
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(48)),
+      ),
+      builder: (context) => Material(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(48)),
+        child: SizedBox(
+          height: 700, // Desired height
+          child: EmojiSelectorScreen(),
+        ),
+      ),
+    );
   }
 
   void _shareAddress() {

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../gen/assets.gen.dart';
+import 'transaction_pin_entry.dart';
 
 class SendSummaryScreen extends StatelessWidget {
   const SendSummaryScreen({super.key});
@@ -80,7 +81,14 @@ class SendSummaryScreen extends StatelessWidget {
                   ],
                 ),
                 child: ElevatedButton(
-                  onPressed: (){},
+                  onPressed: (){
+                         Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PinEntryScreen(),
+                            ),
+                          );
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.transparent,
                     elevation: 0,

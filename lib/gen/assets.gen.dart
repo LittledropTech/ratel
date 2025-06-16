@@ -101,6 +101,17 @@ class $AssetsImagesGen {
   /// File path: assets/images/lesson4.png
   AssetGenImage get lesson4 => const AssetGenImage('assets/images/lesson4.png');
 
+  /// File path: assets/images/on-point.png
+  AssetGenImage get onPoint =>
+      const AssetGenImage('assets/images/on-point.png');
+
+  /// File path: assets/images/putin.png
+  AssetGenImage get putin => const AssetGenImage('assets/images/putin.png');
+
+  /// File path: assets/images/success-star.png
+  AssetGenImage get successStar =>
+      const AssetGenImage('assets/images/success-star.png');
+
   /// File path: assets/images/video1.png
   AssetGenImage get video1 => const AssetGenImage('assets/images/video1.png');
 
@@ -126,6 +137,9 @@ class $AssetsImagesGen {
     lesson2,
     lesson3,
     lesson4,
+    onPoint,
+    putin,
+    successStar,
     video1,
     walletLeafBottom,
     walletLeafTop,
@@ -138,9 +152,13 @@ class Assets {
   static const AssetGenImage arrow0 = AssetGenImage('assets/Arrow0.png');
   static const AssetGenImage arrow1 = AssetGenImage('assets/Arrow1.png');
   static const AssetGenImage arrow2 = AssetGenImage('assets/Arrow2.png');
+  static const AssetGenImage ratelAndroidIcon = AssetGenImage(
+    'assets/Ratel Android icon.png',
+  );
   static const $AssetsIconsGen icons = $AssetsIconsGen();
   static const $AssetsImagesGen images = $AssetsImagesGen();
   static const String intro = 'assets/intro.json';
+  static const AssetGenImage logo = AssetGenImage('assets/logo.png');
   static const AssetGenImage meme1 = AssetGenImage('assets/meme1.png');
   static const AssetGenImage meme2 = AssetGenImage('assets/meme2.png');
   static const AssetGenImage meme3 = AssetGenImage('assets/meme3.png');
@@ -149,17 +167,24 @@ class Assets {
   static const AssetGenImage meme6 = AssetGenImage('assets/meme6.png');
   static const AssetGenImage meme7 = AssetGenImage('assets/meme7.png');
   static const AssetGenImage meme8 = AssetGenImage('assets/meme8.png');
+  static const AssetGenImage meme9 = AssetGenImage('assets/meme9.png');
+  static const String play = 'assets/play.json';
+  static const String ratelsplash = 'assets/ratelsplash.json';
   static const AssetGenImage vector1 = AssetGenImage('assets/vector1.png');
   static const AssetGenImage vector2 = AssetGenImage('assets/vector2.png');
   static const AssetGenImage vector3 = AssetGenImage('assets/vector3.png');
   static const AssetGenImage vector4 = AssetGenImage('assets/vector4.png');
+  static const AssetGenImage vector5 = AssetGenImage('assets/vector5.png');
+  static const AssetGenImage vector6 = AssetGenImage('assets/vector6.png');
 
   /// List of all assets
   static List<dynamic> get values => [
     arrow0,
     arrow1,
     arrow2,
+    ratelAndroidIcon,
     intro,
+    logo,
     meme1,
     meme2,
     meme3,
@@ -168,10 +193,15 @@ class Assets {
     meme6,
     meme7,
     meme8,
+    meme9,
+    play,
+    ratelsplash,
     vector1,
     vector2,
     vector3,
     vector4,
+    vector5,
+    vector6,
   ];
 }
 
