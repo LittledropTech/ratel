@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:bdk_flutter/bdk_flutter.dart' as bdk;
 import 'package:encrypt/encrypt.dart' as encrypt;
+import 'package:google_fonts/google_fonts.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 
 class PoemRestoreScreen extends StatefulWidget {
@@ -128,7 +129,10 @@ class _PoemRestoreScreenState extends State<PoemRestoreScreen> {
   Widget build(BuildContext ctx) {
     final size = MediaQuery.of(ctx).size;
     return Scaffold(
-      appBar: AppBar(title: const Text('Restore from Backup'), centerTitle: true),
+      backgroundColor: kbackupcolor,
+      appBar: AppBar(
+        backgroundColor: kbackupcolor,
+        title: const Text('Restore from Backup'), centerTitle: true),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -141,7 +145,7 @@ class _PoemRestoreScreenState extends State<PoemRestoreScreen> {
               Text(
                 'Select your encrypted PDF backup to restore your wallet.',
                 textAlign: TextAlign.center,
-                style: vsub1titletextstyle,
+                style: GoogleFonts.quicksand(color: kblackcolor,fontSize: 23)
               ),
               const SizedBox(height: 30),
               if (_isLoading)
