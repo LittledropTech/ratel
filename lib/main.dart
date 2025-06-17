@@ -5,6 +5,7 @@ import 'package:bitsure/provider/authservice_provider.dart';
 import 'package:bitsure/provider/wallet_authprovider.dart';
 import 'package:bitsure/provider/backup_logic_provider.dart';
 import 'package:bitsure/provider/introprovider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../onboarding/screens/introscreen.dart';
 import '../onboarding/screens/splashscreen.dart';
 import 'package:bitsure/utils/theme.dart';
@@ -14,6 +15,7 @@ import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   runApp(
     MultiProvider(providers: [
       ChangeNotifierProvider(

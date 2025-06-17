@@ -67,6 +67,7 @@ dependencies:
   syncfusion_flutter_pdf: ^29.2.10
   lottie: ^3.3.1
   mobile_scanner: ^7.0.1
+  flutter_dotenv: ^5.2.1
 
 
 connectivity_plus: ^6.0.3
@@ -101,6 +102,7 @@ flutter:
       - assets/
       - assets/icons/
       - assets/images/
+      - .env
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

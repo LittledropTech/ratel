@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:http/http.dart' as http;
@@ -21,7 +22,7 @@ class GoogleAuthClient extends http.BaseClient {
 Future<void> uploadToGoogleDrive(String encryptedData, String filename) async {
   try {
     final googleSignIn = GoogleSignIn(
-      clientId: '1093704872590-ff476ukkif5jt2tb4k4d5nqprq1akrsh.apps.googleusercontent.com', //My client ID
+      clientId: dotenv.env['GOOGLE_CLIENT_ID'], 
       scopes: [drive.DriveApi.driveFileScope],
     );
 
@@ -43,6 +44,7 @@ Future<void> uploadToGoogleDrive(String encryptedData, String filename) async {
     file.name = filename;
 
     final response = await driveApi.files.create(file, uploadMedia: media);
+    debugPrint("Upload success: ${response.id}");
   } catch (e) {
     debugPrint(" Google Drive upload failed: $e");
   }
