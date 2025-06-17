@@ -1,16 +1,15 @@
 import 'dart:ui';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../onboarding/screens/seedphrasescreen.dart';
 import 'package:bitsure/utils/customutils.dart';
 import 'package:bitsure/utils/theme.dart';
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
-import '../../utils/textstyle.dart';
+import 'package:bitsure/utils/textstyle.dart';
 
 class Policiesscreen extends StatefulWidget {
-  List<String> mnemonics = [];
-  Policiesscreen({super.key, required this.mnemonics});
+  final List<String> mnemonics;
+  const Policiesscreen({super.key, required this.mnemonics});
 
   @override
   State<Policiesscreen> createState() => _PoliciesscreenState();
@@ -18,203 +17,142 @@ class Policiesscreen extends StatefulWidget {
 
 class _PoliciesscreenState extends State<Policiesscreen> {
   bool ackNonCustodian = false;
-  bool ackSeedPhrase = false;
-  bool ackResponsibility = false;
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     return Scaffold(
       backgroundColor: kwhitecolor,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SizedBox(height: 2),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: customcontainer(
-                    size.height * 0.8,
-                    size.width / 1.1,
-                    BoxDecoration(
-                      color: ktransarentcolor,
-                      borderRadius: BorderRadius.circular(10),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 60),
+
+              // --- Top Section ---
+              customcontainer(
+                150,
+                200,
+                const BoxDecoration(
+                  image: DecorationImage(image: AssetImage('assets/meme10.png')),
+                  shape: BoxShape.circle,
+                ),
+                const SizedBox(),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "You're the Captain Now",
+                style: GoogleFonts.quicksand(
+                  color: kblackcolor,
+                  fontSize: 25,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 30),
+
+              // --- Light Blue Information Container ---
+              customcontainer(
+                290, // Let the height be determined by the content
+                size.width,
+                BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: kblackcolor.withOpacity(0.4),
+                      spreadRadius: 0.5,
+                      blurRadius: 3,
+                      offset: const Offset(0, 5),
                     ),
-                    SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          SizedBox(height: 100),
-                          CircleAvatar(
-                            radius: 60,
-                            child: Center(
-                              child: Icon(
-                                Icons.key,
-                                size: 35,
-                                color: klightbluecolor,
-                              ),
+                  ],
+                  borderRadius: BorderRadius.circular(20),
+                  color: klightbluecolor,
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                  child: Column(
+                    children: [
+                      Text(
+                        "With great power comes great responsibility.\n You and only you will have access to your wallet keys. \nIf you lose your keys, not even your mum can save you.",
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          color: kwhitecolor,
+                          fontSize: 17,
+                          height: 1.4, // Improves line spacing
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              color: kwhitecolor.withOpacity(0.2),
                             ),
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            "You're the Captain Now",
-                            style: GoogleFonts.quicksand(
-                              color: kblackcolor,
-                              fontSize: 25,
-                            ),
-                          ),
-                          SizedBox(height: 30),
-                          customcontainer(
-                            size.height * 0.4,
-                            size.width / 1.2,
-                            BoxDecoration(
-                              boxShadow: [
-                                BoxShadow(
-                                  color: kblackcolor,
-                                  spreadRadius: 0.5,
-                                  blurRadius: 0.5,
-                                  offset: const Offset(0, 5),
-                                ),
-                              ],
-                              borderRadius: BorderRadius.circular(20),
-                              color: klightbluecolor,
-                            ),
-                            Column(
+                            child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    left: 20,
-                                    right: 20,
-                                  ),
-                                  child: Center(
-                                    child: Column(
-                                    
-                                      children: [
-                                        Text(
-                                          'With great power comes great responsibility.',
-                                          style: GoogleFonts.poppins(
-                                            color: kwhitecolor,
-                                            fontSize: 17,
-                                          ),
-                                        ),
-                                        SizedBox(height: 4),
-                                        Text(
-                                          'You and only you will have access to your wallet keys,',
-                                          style: GoogleFonts.poppins(
-                                            color: kwhitecolor,
-                                            fontSize: 17,
-                                          ),
-                                        ),
-                                        SizedBox(height: 3),
-                                        Text(
-                                          'If you lose your keys, not even your mum can save you',
-                                          style: GoogleFonts.poppins(
-                                            color: kwhitecolor,
-                                            fontSize: 17,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    top: 40,
-                                    left: 6,
-                                    right: 6,
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(2),
-                                    child: BackdropFilter(
-                                      filter: ImageFilter.blur(
-                                        sigmaX: 10,
-                                        sigmaY: 10,
-                                      ),
-                                      child: customcontainer(
-                                        40,
-                                        size.width / 1.2,
-                                        BoxDecoration(
-                                          borderRadius: BorderRadius.circular(
-                                            2,
-                                          ),
-                                          color: kwhitecolor.withOpacity(
-                                            0.5,
-                                          ), // translucent color
-                                        ),
-                                        Row(
-                                          children: [
-                                            Padding(
-                                              padding: const EdgeInsets.all(
-                                                15.0,
-                                              ),
-                                              child: Icon(
-                                                Icons.error_outline,
-                                                color: kredcolor,
-                                              ), // optional style
-                                            ),
-                                            Text(
-                                              'No support Email,No forgot Key \nButton,You must save this properly',
-                                              style: GoogleFonts.quicksand(
-                                                color: kredcolor,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
+                                Icon(Icons.error_outline, color: kredcolor),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'No support email, No forgot key button. You must save this properly.',
+                                    style: GoogleFonts.quicksand(
+                                      color: kredcolor,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                        ],
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
 
-            buildClauseCheckbox(
-              title: "I understand I'm responsible for my keys and funds",
-
-              value: ackNonCustodian,
-              onChanged: (val) {
-                setState(() {
-                  ackNonCustodian = val ?? false;
-                });
-              },
-            ),
-            SizedBox(height: 15),
-            if (ackNonCustodian)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 30),
-                child: custombuttons(
-                  40,
-                  size.width / 1.2,
+              // --- THIS IS THE FIX: Checkbox and Button are now directly below ---
+              const SizedBox(height: 30),
+              buildClauseCheckbox(
+                title: "I understand I'm responsible for my keys and funds",
+                value: ackNonCustodian,
+                onChanged: (val) {
+                  setState(() {
+                    ackNonCustodian = val ?? false;
+                  });
+                },
+              ),
+              const SizedBox(height: 50),
+              // The button now only appears after the box is checked
+              if (ackNonCustodian)
+                custombuttons(
+                  45,
+                  size.width * 0.9,
                   BoxDecoration(
                     boxShadow: [
                       BoxShadow(
-                        color: kblackcolor,
+                        color: kblackcolor.withOpacity(0.4),
                         spreadRadius: 0.5,
-                        blurRadius: 0.5,
+                        blurRadius: 3,
                         offset: const Offset(0, 5),
                       ),
                     ],
                     color: klightbluecolor,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(25),
                   ),
                   () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) {
-                          return Seedphrasescreen(
-                            mnemonicWords: widget.mnemonics,
-                          );
+                          return Seedphrasescreen(mnemonicWords: widget.mnemonics);
                         },
                       ),
                     );
@@ -226,45 +164,40 @@ class _PoliciesscreenState extends State<Policiesscreen> {
                     ),
                   ),
                 ),
-              ),
-          ],
+                const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );
   }
 
+  // Checkbox widget remains the same
   Widget buildClauseCheckbox({
     required String title,
     required bool value,
     required void Function(bool?) onChanged,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Checkbox(
-            value: value,
-            onChanged: onChanged,
-            activeColor: klightbluecolor,
-          ),
-          Expanded(
-            child: RichText(
-              text: TextSpan(
-                style: GoogleFonts.poppins(
-                  color: kbackgroundcolor,
-                  fontSize: 14,
-                ),
-                children: [
-                  TextSpan(
-                    text: '$title\n',
-                    style: TextStyle(color: kbackgroundcolor, fontSize: 15),
-                  ),
-                ],
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: InkWell(
+        onTap: () => onChanged(!value),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Checkbox(
+              value: value,
+              onChanged: onChanged,
+              activeColor: klightbluecolor,
+            ),
+            Expanded(
+              child: Text(
+                title,
+                style: GoogleFonts.poppins(color: kbackgroundcolor, fontSize: 15),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
