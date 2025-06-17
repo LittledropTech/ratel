@@ -1,10 +1,15 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:bitsure/dashboard/pages/sat_sent.dart';
 import 'package:bitsure/gen/assets.gen.dart';
+import 'package:bitsure/provider/authservice_provider.dart';
 import 'package:bitsure/utils/customutils.dart';
 import 'package:bitsure/utils/theme.dart';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:provider/provider.dart';
 
 class PinEntryScreen extends StatefulWidget {
     final Function(BuildContext context, {required String transactionPin})?
@@ -16,6 +21,7 @@ class PinEntryScreen extends StatefulWidget {
 }
 
 class _PinEntryScreenState extends State<PinEntryScreen> {
+    final _storage = const FlutterSecureStorage();
   List<String> pin = List.filled(6, '');
   bool obscurePin = true;
 
@@ -85,7 +91,7 @@ class _PinEntryScreenState extends State<PinEntryScreen> {
           : isSubmit
           ? InkWell(
             onTap: ()=>
-              showSatsSentBottomSheet(context),
+              _handlePinCompleted(pin.join()),
             child: Container(
                 width: 70,
                 height: 40,
@@ -232,29 +238,28 @@ class _PinEntryScreenState extends State<PinEntryScreen> {
     );
   }
 
+    String hashPin(String pin) {
+    final bytes = utf8.encode(pin);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
+  }
 
-  void showSatsSentBottomSheet(BuildContext context) {
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    builder: (context) => DraggableScrollableSheet(
-      initialChildSize: 0.85,
-      minChildSize: 0.4,
-      maxChildSize: 0.95,
-      expand: false,
-      builder: (_, controller) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-        ),
-        child: SingleChildScrollView(
-          controller: controller,
-          child: const SatsSentBottomSheet(),
-        ),
-      ),
-    ),
-  );
+    Future<void> _handlePinCompleted(String enteredPin) async {
+  final authService = Provider.of<AuthService>(context, listen: false);
+  final storedHash = await _storage.read(key: 'user_pin_hash');
+  final enteredPinHash = hashPin(enteredPin);
+
+  if (enteredPinHash == storedHash) {
+    print("PIN correct. Unlocking app.");
+    Navigator.pop(context, true);
+  } else {
+    customErrorShowMeme(context);
+    pin.clear();
+    
+      
+  }
 }
+
+
 
 }

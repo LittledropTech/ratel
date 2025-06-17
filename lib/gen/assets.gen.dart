@@ -68,6 +68,9 @@ class $AssetsImagesGen {
   AssetGenImage get bitcoinStats =>
       const AssetGenImage('assets/images/bitcoin-stats.png');
 
+  /// File path: assets/images/cooked.png
+  AssetGenImage get cooked => const AssetGenImage('assets/images/cooked.png');
+
   /// File path: assets/images/decent-not-reach.png
   AssetGenImage get decentNotReach =>
       const AssetGenImage('assets/images/decent-not-reach.png');
@@ -127,6 +130,7 @@ class $AssetsImagesGen {
   List<AssetGenImage> get values => [
     balablu,
     bitcoinStats,
+    cooked,
     decentNotReach,
     earn1,
     earn2,

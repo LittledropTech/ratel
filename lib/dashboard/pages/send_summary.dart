@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:bdk_flutter/bdk_flutter.dart';
+import 'package:bitsure/dashboard/pages/sat_sent.dart';
 import 'package:bitsure/utils/customutils.dart';
 import 'package:bitsure/utils/theme.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 
 import '../../gen/assets.gen.dart';
+import 'sats_failed.dart';
 import 'transaction_pin_entry.dart';
 
 class SendSummaryScreen extends StatefulWidget {
@@ -33,6 +35,8 @@ class SendSummaryScreen extends StatefulWidget {
 }
 
 class _SendSummaryScreenState extends State<SendSummaryScreen> {
+  String txId = '';
+  
   Future<double> fetchRecommendedFeeRate() async {
     try {
       final response = await http.get(
@@ -46,6 +50,7 @@ class _SendSummaryScreenState extends State<SendSummaryScreen> {
         throw Exception("Failed to fetch fee rate");
       }
     } catch (e) {
+      // Return a fallback default if API fails
       return 10.0;
     }
   }
@@ -55,23 +60,37 @@ class _SendSummaryScreenState extends State<SendSummaryScreen> {
     required Wallet wallet,
     required String recipientAddress,
     required int amountInSats,
-    double? feeRate,
+    double? feeRate, // Optional override
   }) async {
     try {
+      // Create the recipient address object
       final address = await Address.create(address: recipientAddress);
-      final txBuilder = TxBuilder();
-      final script = await address.scriptPubKey();
 
+      // Create the transaction builder
+      final txBuilder = TxBuilder();
+
+      // Add recipient and amount
+      final script = await address.scriptPubKey();
       txBuilder.addRecipient(script, amountInSats);
+
+      // Fetch or use provided fee rate
       final dynamicFeeRate = feeRate ?? await fetchRecommendedFeeRate();
       txBuilder.feeRate(dynamicFeeRate);
 
+      // Build the transaction
       final txBuilderResult = await txBuilder.finish(wallet);
       final psbt = txBuilderResult.psbt;
+
+      // Sign the transaction
       final signedPsbt = await wallet.sign(psbt: psbt);
+
+      // Extract the signed transaction
       final signedTx = await signedPsbt.extractTx();
+
+      // Get transaction ID before broadcasting
       final txid = await signedTx.txid();
 
+      // Create blockchain connection for broadcasting
       final blockchain = await Blockchain.create(
         config: BlockchainConfig.electrum(
           config: ElectrumConfig(
@@ -87,17 +106,21 @@ class _SendSummaryScreenState extends State<SendSummaryScreen> {
         ),
       );
 
+      // Broadcast the transaction
       await blockchain.broadcast(signedTx);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Transaction sent!\nTXID: $txid")),
-      );
-
+      // Notify success
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Transaction sent!\nTXID: $txid")));
+      setState(() {
+        txId = txid;
+      });
       return txid;
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
       throw Exception('Failed to send Bitcoin: $e');
     }
   }
@@ -146,7 +169,8 @@ class _SendSummaryScreenState extends State<SendSummaryScreen> {
             const SizedBox(height: 16),
             SummaryTile(
               title: 'Network Fee',
-              value: '${widget.networkFee} sats (Fast AF)',
+              value:
+                  '${(num.parse(widget.networkFee) / 100000000).toStringAsFixed(8)} Sats (Fast AF)',
             ),
             const Spacer(),
             Container(
@@ -173,18 +197,86 @@ class _SendSummaryScreenState extends State<SendSummaryScreen> {
                       context: context,
                       wallet: widget.wallet,
                       recipientAddress: widget.recipientAddress,
-                      amountInSats:
-                          btcToSats(double.parse(widget.amountInBTC)),
+                      amountInSats: btcToSats(double.parse(widget.amountInBTC)),
                     );
                   }
 
-                  await Navigator.push(
+                  final bool worked = await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) =>
                           PinEntryScreen(funcCall: createTransaction),
                     ),
                   );
+
+                  if (worked) {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (context) => DraggableScrollableSheet(
+                        initialChildSize: 0.85,
+                        minChildSize: 0.5,
+                        maxChildSize: 0.95,
+                        expand: false,
+                        builder: (_, controller) => Container(
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(32),
+                            ),
+                          ),
+                          child: SingleChildScrollView(
+                            controller: controller,
+                            child: SatsSentBottomSheet(
+                              time: DateTime.now(),
+                              amount: double.parse(widget.amountInBTC),
+                              address: widget.recipientAddress,
+                              fee: double.parse(
+                                (num.parse(widget.networkFee) / 100000000)
+                                    .toStringAsFixed(8),
+                              ),
+                              status: 'Completed',
+                              network: widget.network == Network.Testnet
+                                  ? 'testnet'
+                                  : 'mainnet',
+                              txid: txId,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  } else {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (context) => DraggableScrollableSheet(
+                        initialChildSize: 0.85,
+                        minChildSize: 0.4,
+                        maxChildSize: 0.95,
+                        expand: false,
+                        builder: (_, controller) => Container(
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(32),
+                            ),
+                          ),
+                          child: SingleChildScrollView(
+                            controller: controller,
+                            child: SatsFailedBottomSheet(),
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+                  //  Navigator.push(
+                  //     context,
+                  //     MaterialPageRoute(
+                  //       builder: (context) => PinEntryScreen(),
+                  //     ),
+                  //   );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.transparent,

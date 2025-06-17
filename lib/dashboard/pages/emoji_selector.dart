@@ -4,7 +4,8 @@ import 'package:flutter/services.dart';
 import '../../utils/theme.dart';
 
 class EmojiSelectorScreen extends StatefulWidget {
-  const EmojiSelectorScreen({super.key});
+  final String address;
+  const EmojiSelectorScreen({super.key, required this.address});
 
   @override
   State<EmojiSelectorScreen> createState() => _EmojiSelectorScreenState();
@@ -97,8 +98,8 @@ class _EmojiSelectorScreenState extends State<EmojiSelectorScreen> {
                 ],
               ),
               const SizedBox(height: 8),
-              const Text(
-                "gstr27467289834tyghsoiwehjdf",
+               Text(
+                widget.address,
                 style: TextStyle(color: Colors.black54),
               ),
               const SizedBox(height: 16),

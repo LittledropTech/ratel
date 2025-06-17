@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:bdk_flutter/bdk_flutter.dart';
 import 'package:bitsure/network/createwallet.dart';
 import 'package:flutter/widgets.dart';
@@ -87,6 +89,7 @@ Future<void> registerUserOnBackend(Network network) async {
 
 // Get transaction history
 Future<List<TransactionDetails>> getTransactionHistory(Wallet wallet) async {
+  log(wallet.listTransactions(false).toString());
   return await wallet.listTransactions(false);
 }
 
