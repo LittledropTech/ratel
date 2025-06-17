@@ -11,7 +11,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import '../../gen/assets.gen.dart';
-import '../../utils/theme.dart'; 
+import '../../utils/theme.dart';
 
 class SendBitcoinScreen extends StatefulWidget {
   const SendBitcoinScreen({super.key});
@@ -30,7 +30,7 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
   String? displayText;
   String? address;
   String? balance;
-  bool enable =false;
+  bool enable = false;
 
   void _fillAmount(String amount) {
     setState(() {
@@ -46,7 +46,7 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return data['halfHourFee'].toDouble(); 
+        return data['halfHourFee'].toDouble();
       } else {
         throw Exception("Failed to fetch fee rate");
       }
@@ -56,29 +56,89 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
   }
 
   void _sendBitcoin() async {
-    final address = addressController.text.trim();
-    final amount = amountController.text.trim();
-    if (address.isEmpty || amount.isEmpty) {
+    final recipient = addressController.text.trim();
+    final amountText = amountController.text.trim();
+
+    if (recipient.isEmpty || amountText.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Address and Amount are required")),
       );
       return;
     }
 
-    double feeRate = await fetchRecommendedFeeRate();
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => SendSummaryScreen(
-          memo: memoController.text,
-          recipientAddress: address,
-          amountInBTC: amount,
-          networkFee: feeRate.toString(),
-          wallet: _wallet!,
-          network: Network.Testnet,
+    final amount = double.tryParse(amountText);
+    if (amount == null || amount <= 0) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Enter a valid amount")));
+      return;
+    }
+
+    final availableSats = _balanceSats ?? 0;
+    final amountInSats = (amount * 100000000).toInt();
+
+    if (amountInSats > availableSats) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Insufficient funds")));
+      return;
+    }
+
+    try {
+      setState(() => _isLoading = true);
+
+      final addressObj = await Address.create(address: recipient);
+
+      final feeRate = await fetchRecommendedFeeRate();
+
+      final builder = TxBuilder()
+        ..addRecipient(await addressObj.scriptPubKey(), amountInSats)
+        ..feeRate(feeRate);
+
+      final txBuilderResult = await builder.finish(_wallet!);
+      final signedPsbt = await _wallet!.sign(psbt: txBuilderResult.psbt);
+      final tx = await signedPsbt.extractTx();
+
+      final blockchain = await Blockchain.create(
+        config: BlockchainConfig.electrum(
+          config: ElectrumConfig(
+            url: 'ssl://electrum.blockstream.info:60002',
+            socks5: null,
+            retry: 5,
+            timeout: 5,
+            stopGap: 10,
+            validateDomain: false,
+          ),
         ),
-      ),
-    );
+      );
+      await blockchain.broadcast(tx);
+      final txid = await tx.txid();
+      log(txid);
+      setState(() => _isLoading = false);
+
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SendSummaryScreen(
+            memo: memoController.text,
+            recipientAddress: recipient,
+            amountInBTC: amount.toString(),
+            networkFee: feeRate.toString(),
+            wallet: _wallet!,
+            network: Network.Testnet,
+            txid: txid,
+          ),
+        ),
+      );
+
+      await syncWallet(_wallet!);
+    } catch (e) {
+      setState(() => _isLoading = false);
+      log("Transaction failed: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Transaction failed: ${e.toString()}")),
+      );
+    }
   }
 
   @override
@@ -90,7 +150,6 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
   Future<void> syncWallet(Wallet wallet, {String? electrumUrl}) async {
     final defaultElectrumUrl =
         electrumUrl ?? 'ssl://electrum.blockstream.info:60002';
-
     final blockchain = await Blockchain.create(
       config: BlockchainConfig.electrum(
         config: ElectrumConfig(
@@ -105,6 +164,12 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
     );
 
     await wallet.sync(blockchain);
+    final balance = await _wallet!.getBalance();
+    log('$balance');
+    setState(() {
+      _balanceSats = balance.total;
+      _isLoading = false;
+    });
   }
 
   Future<void> _initializeWalletAndBalance() async {
@@ -138,14 +203,7 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
         network: Network.Testnet,
         databaseConfig: const DatabaseConfig.memory(),
       );
-
       await syncWallet(_wallet!);
-      final balance = await _wallet!.getBalance();
-      setState(() {
-        _balanceSats = balance.total;
-        _isLoading = false;
-      });
-
       log(_balanceSats.toString(), name: "Sats Balance");
     } catch (e) {
       debugPrint('Error initializing wallet: $e');
@@ -239,9 +297,10 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
                                     ),
                                   ),
                                   Text(
-                                    (_balanceSats?? 0 / 100000000).toStringAsFixed(
-                                      5,
-                                    ), 
+                                    satsToBtc(
+                                      _balanceSats ?? 0,
+                                    ).toStringAsFixed(5),
+
                                     style: GoogleFonts.quicksand(
                                       fontSize: 48,
                                       color: Colors.black,
@@ -289,7 +348,6 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
                 ),
               ),
 
-
               const SizedBox(height: 42),
               Text(
                 "Recipient Bitcoin Address",
@@ -305,10 +363,9 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
                 onChanged: (value) async {
                   try {
                     var address = await decodeEmojiToAddress(value);
-                    if(address?.isNotEmpty== true){
+                    if (address?.isNotEmpty == true) {
                       addressController.text = address ?? '';
                     }
-                    
                   } catch (e) {
                     log(e.toString());
                   }
@@ -373,15 +430,18 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
               TextField(
                 onChanged: (value) {
                   try {
-                  var  bal =    (_balanceSats ?? 0 / 100000000).toStringAsFixed(5);
-                   var amt =  double.parse(bal);
-                   var val= double.parse(value);
-                   setState(() {
-                     enable=amt >val;
-                   });
-                    
-                  } catch (_) {
-                    
+                    var bal = (_balanceSats ?? 0 / 10000000).toStringAsFixed(5);
+                    log(' my balances $_balanceSats');
+                    var amt = double.parse(bal);
+                    var val = double.parse(value);
+                    log(' my ammount $amt');
+
+                    log(' my value $val');
+                    setState(() {
+                      enable = amt > val;
+                    });
+                  } catch (e) {
+                    log(e.toString());
                   }
                 },
                 controller: amountController,
@@ -451,13 +511,15 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
                   ],
                 ),
                 child: ElevatedButton(
+                  onPressed: () {
+                    if (enable) {
+                      _sendBitcoin();
+                    } else {
+                      customSnackBar('No Enough ammount ', kredcolor, context);
+                    }
+                  },
 
-                  onPressed: (){
-
-                  } ,
-                  
                   style: ElevatedButton.styleFrom(
-                  
                     backgroundColor: Colors.transparent,
                     elevation: 0,
                     shadowColor: Colors.transparent,

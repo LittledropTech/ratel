@@ -150,14 +150,15 @@ class SatsSentBottomSheet extends StatelessWidget {
                 children: [
                   Text("Onchain", style: const TextStyle(color: Colors.black54)),
                   GestureDetector(
-                    onTap: () {
-                      launchURL(
-                        context,
-                        network == 'testnet'
-                            ? 'https://mempool.space/testnet/tx/$txid'
-                            : 'https://mempool.space/tx/$txid',
-                      );
-                    },
+onTap: () {
+  launchURL(
+    context,
+    network == 'testnet'
+        ? 'https://mempool.space/testnet/tx/$txid'
+        : 'https://mempool.space/tx/$txid',
+  );
+},
+
                     child: Text(
                       'Verify trx',
                       style: GoogleFonts.quicksand(

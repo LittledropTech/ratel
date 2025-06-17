@@ -19,6 +19,8 @@ class SendSummaryScreen extends StatefulWidget {
   final Wallet wallet;
   final String networkFee;
   final Network network;
+    final String txid; 
+
 
   const SendSummaryScreen({
     super.key,
@@ -28,6 +30,7 @@ class SendSummaryScreen extends StatefulWidget {
     required this.wallet,
     required this.networkFee,
     required this.network,
+    required this.txid,
   });
 
   @override
