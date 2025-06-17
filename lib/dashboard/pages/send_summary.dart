@@ -18,6 +18,8 @@ class SendSummaryScreen extends StatefulWidget {
   final String memo;
   final Wallet wallet;
   final String networkFee;
+  final Network network;
+
   const SendSummaryScreen({
     super.key,
     required this.amountInBTC,
@@ -25,6 +27,7 @@ class SendSummaryScreen extends StatefulWidget {
     required this.memo,
     required this.wallet,
     required this.networkFee,
+    required this.network,
   });
 
   @override
@@ -32,9 +35,8 @@ class SendSummaryScreen extends StatefulWidget {
 }
 
 class _SendSummaryScreenState extends State<SendSummaryScreen> {
-  final network = Network.Testnet;
-  String txId = "";
-
+  String txId = '';
+  
   Future<double> fetchRecommendedFeeRate() async {
     try {
       final response = await http.get(
@@ -43,7 +45,6 @@ class _SendSummaryScreenState extends State<SendSummaryScreen> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        // Use halfHourFee or fastestFee as per your preference
         return data['halfHourFee'].toDouble(); // e.g., 12.5
       } else {
         throw Exception("Failed to fetch fee rate");
@@ -93,7 +94,7 @@ class _SendSummaryScreenState extends State<SendSummaryScreen> {
       final blockchain = await Blockchain.create(
         config: BlockchainConfig.electrum(
           config: ElectrumConfig(
-            url: network == Network.Testnet
+            url: widget.network == Network.Testnet
                 ? 'ssl://electrum.blockstream.info:60004'
                 : 'ssl://electrum.blockstream.info:60002',
             socks5: null,
@@ -124,7 +125,6 @@ class _SendSummaryScreenState extends State<SendSummaryScreen> {
     }
   }
 
-  // Send Bitcoin to an address
   @override
   Widget build(BuildContext context) {
     final titleStyle = GoogleFonts.quicksand(
@@ -134,7 +134,6 @@ class _SendSummaryScreenState extends State<SendSummaryScreen> {
     );
     return Scaffold(
       backgroundColor: kwhitecolor,
-
       appBar: AppBar(
         backgroundColor: kwhitecolor,
         elevation: 0,
@@ -145,12 +144,9 @@ class _SendSummaryScreenState extends State<SendSummaryScreen> {
         child: Column(
           children: [
             const SizedBox(height: 80),
-            // Avatar
             CircleAvatar(
               radius: 50,
-              backgroundImage: AssetImage(
-                Assets.images.greenFlag.path,
-              ), // Replace with your image
+              backgroundImage: AssetImage(Assets.images.greenFlag.path),
             ),
             const SizedBox(height: 12),
             const Text(
@@ -241,7 +237,7 @@ class _SendSummaryScreenState extends State<SendSummaryScreen> {
                                     .toStringAsFixed(8),
                               ),
                               status: 'Completed',
-                              network: network == Network.Testnet
+                              network: widget.network == Network.Testnet
                                   ? 'testnet'
                                   : 'mainnet',
                               txid: txId,

@@ -1,5 +1,9 @@
+import 'dart:developer';
+import 'package:bdk_flutter/bdk_flutter.dart';
 import 'package:bitsure/profile/profile.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../gen/assets.gen.dart';
@@ -15,6 +19,95 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  Wallet? _wallet;
+  int? _balanceSats;
+  bool _isLoading = true;
+  String? displayText;
+  String? address;
+  String? balance;
+  final network = Network.Testnet;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeWalletAndBalance();
+  }
+
+  Future<String> getNewAddress(Wallet? wallet) async {
+    final addressInfo = await wallet?.getAddress(
+      addressIndex: const AddressIndex.new(),
+    );
+    log(addressInfo!.address.toString());
+    return addressInfo.address.toString();
+  }
+
+  Future<void> syncWallet(Wallet wallet, {String? electrumUrl}) async {
+    final defaultElectrumUrl = electrumUrl ?? 'ssl://electrum.blockstream.info:60002';
+
+    final blockchain = await Blockchain.create(
+      config: BlockchainConfig.electrum(
+        config: ElectrumConfig(
+          url: defaultElectrumUrl,
+          socks5: null,
+          retry: 5,
+          timeout: 5,
+          stopGap: 10,
+          validateDomain: false,
+        ),
+      ),
+    );
+
+    await wallet.sync(blockchain);
+  }
+
+  Future<void> _initializeWalletAndBalance() async {
+    try {
+      FlutterSecureStorage storage = const FlutterSecureStorage();
+      String? mnemonicStr = await storage.read(key: 'users_mnemonics') ?? "";
+
+      final mnemonic = await Mnemonic.fromString(mnemonicStr);
+
+      final descriptorSecretKey = await DescriptorSecretKey.create(
+        network: network,
+        mnemonic: mnemonic,
+      );
+
+      final externalDescriptor = await Descriptor.newBip44(
+        secretKey: descriptorSecretKey,
+        network: network,
+        keychain: KeychainKind.External,
+      );
+
+      final internalDescriptor = await Descriptor.newBip44(
+        secretKey: descriptorSecretKey,
+        network: network,
+        keychain: KeychainKind.Internal,
+      );
+
+      _wallet = await Wallet.create(
+        descriptor: externalDescriptor,
+        changeDescriptor: internalDescriptor,
+        network: Network.Testnet,
+        databaseConfig: const DatabaseConfig.memory(),
+      );
+
+      await syncWallet(_wallet!);
+      final balance = await _wallet!.getBalance();
+      setState(() {
+        _balanceSats = balance.total;
+        _isLoading = false;
+      });
+
+      getNewAddress(_wallet);
+      log(_balanceSats.toString(), name: "Sats Balance");
+    } catch (e) {
+      debugPrint('Error initializing wallet: $e');
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,20 +127,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Header row with avatar, greeting and bell icon
                       _buildHeader(context, isMobile),
-
                       const SizedBox(height: 24),
-
-                      // Wallet Info Card
                       WalletCard(isMobile: isMobile),
-
                       const SizedBox(height: 32),
-
-                      // Motivational quote text
                       Center(
                         child: Text(
-                          '"Up 3% this week. You’re basically Warren Buffet',
+                          '"Up 3% this week. You’re basically Warren Buffet"',
                           style: GoogleFonts.quicksand(
                             fontSize: 14,
                             color: Colors.black,
@@ -56,36 +142,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           textAlign: TextAlign.center,
                         ),
                       ),
-
                       const SizedBox(height: 32),
-
-                      // Action buttons section
                       ActionButtons(),
-
                       const SizedBox(height: 8),
-
-                      // Recent chaos header with see all
                     ],
                   ),
                 ),
-
                 Expanded(
                   child: Container(
-                    padding: EdgeInsets.only(top: 24, left: 24, right: 24),
-                    decoration: BoxDecoration(
+                    padding: const EdgeInsets.only(top: 24, left: 24, right: 24),
+                    decoration: const BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(32),
                         topRight: Radius.circular(32),
                       ),
                     ),
-                    child: Column(
-                      children: [
-                        RecentChaosHeader(),
-                        // Recent chaos list
-                        RecentChaosList(),
-                      ],
-                    ),
+                    child: _isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : Column(
+                            children: [
+                              if (_wallet != null) RecentChaosList(wallet: _wallet!),
+                            ],
+                          ),
                   ),
                 ),
               ],
@@ -97,58 +176,58 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildHeader(BuildContext context, bool isMobile) => Row(
-    crossAxisAlignment: CrossAxisAlignment.center,
-    children: [
-      Semantics(
-        label: 'User profile picture',
-        child: InkWell(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => ProfileScreen()),
-            );
-          },
-          child: CircleAvatar(
-            radius: 24,
-            backgroundImage: AssetImage(Assets.images.balablu.path),
-            backgroundColor: Colors.grey.shade300,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Semantics(
+            label: 'User profile picture',
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ProfileScreen()),
+                );
+              },
+              child: CircleAvatar(
+                radius: 24,
+                backgroundImage: AssetImage(Assets.images.balablu.path),
+                backgroundColor: Colors.grey.shade300,
+              ),
+            ),
           ),
-        ),
-      ),
-      const SizedBox(width: 12),
-      Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Hi, Onionsman',
-              style: GoogleFonts.quicksand(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Hi, Onionsman',
+                  style: GoogleFonts.quicksand(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  'GM Bestie, make the moves',
+                  style: GoogleFonts.quicksand(
+                    fontSize: 13,
+                    color: Colors.black54,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ],
             ),
-            SizedBox(height: 3),
-            Text(
-              'GM Bestie, make the moves',
-              style: GoogleFonts.quicksand(
-                fontSize: 13,
-                color: Colors.black54,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-          ],
-        ),
-      ),
-      IconButton(
-        icon: Assets.icons.solarBellLinear.svg(),
-        iconSize: 28,
-        color: Colors.black87,
-        onPressed: () {
-          // handle notifications pressed
-        },
-        tooltip: 'Notifications',
-      ),
-    ],
-  );
+          ),
+          IconButton(
+            icon: Assets.icons.solarBellLinear.svg(),
+            iconSize: 28,
+            color: Colors.black87,
+            onPressed: () {
+              // handle notifications pressed
+            },
+            tooltip: 'Notifications',
+          ),
+        ],
+      );
 }

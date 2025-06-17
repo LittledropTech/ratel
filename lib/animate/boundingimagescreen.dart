@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:math';
-import 'package:bitsure/utils/theme.dart';
+
 import 'package:flutter/material.dart';
 
 class BouncingImagesScreen extends StatefulWidget {
