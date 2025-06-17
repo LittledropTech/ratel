@@ -42,8 +42,8 @@ class ActionButtons extends StatelessWidget {
                   children: [
                     InkWell(
                       onTap: () {
-                        // TODO: implement button tap
-                        if (btn.label.toLowerCase() == "learn") {
+                      
+                        if (btn.label.toLowerCase() == "(l)earn") {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
