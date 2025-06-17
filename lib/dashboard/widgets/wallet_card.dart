@@ -64,55 +64,6 @@ class _WalletCardState extends State<WalletCard> {
   await wallet.sync(blockchain);
 }
 
-  // blockchainInit() async {
-  //   try {
-  //     blockchain = await Blockchain.create(
-  //       config: BlockchainConfig.esplora(
-  //         config: EsploraConfig(
-  //           baseUrl: "https://mutinynet.com/api",
-  //           // stopGap: BigInt.from(10),
-  //           // timeout: BigInt.from(5),
-  //           stopGap: 10,
-  //           timeout: 5,
-  //           concurrency: 4,
-  //           proxy: null,
-  //         ),
-  //       ),
-  //     );
-
-  //     if (kDebugMode) {
-  //       print("Blockchain initialized successfully");
-  //     }
-  //   } on Exception catch (e) {
-  //     setState(() {
-  //       displayText = "Error: ${e.toString()}";
-  //     });
-  //   }
-  // }
-
-  // Future<void> syncWallet() async {
-  //   try {
-  //     setState(() {
-  //       displayText = "Syncing wallet...";
-  //     });
-
-  //     await _wallet?.sync(blockchain);
-  //     setState(() {
-  //       displayText = "Sync completed";
-  //     });
-
-  //     if (kDebugMode) {
-  //       print("Wallet sync completed successfully");
-  //     }
-  //   } on Exception catch (e) {
-  //     setState(() {
-  //       displayText = "Sync error: $e";
-  //     });
-  //     if (kDebugMode) {
-  //       print("Error during sync: $e");
-  //     }
-  //   }
-  // }
 
   Future<void> _initializeWalletAndBalance() async {
     try {
@@ -167,17 +118,6 @@ class _WalletCardState extends State<WalletCard> {
       });
     }
 
-    // Future<AddressInfo> getNewAddress(Wallet wallet) async {
-    //   final res = await wallet.getAddress(addressIndex: const AddressIndex.new());
-    //   if (kDebugMode) {
-    //     print(res.address);
-    //   }
-    //   setState(() {
-    //     displayText = res.address.toString();
-    //     address = res.address.toString();
-    //   });
-    //   return res;
-    // }
   }
 
   @override
@@ -258,9 +198,7 @@ class _WalletCardState extends State<WalletCard> {
                       ),
                     ),
                   ),
-                  // const SizedBox(height: 20),
 
-                  // Bitcoin amount big text with eye icon inline
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -286,14 +224,7 @@ class _WalletCardState extends State<WalletCard> {
                         ),
                       ),
                       const SizedBox(width: 1),
-                      // Text(
-                      //   '0.0042',
-                      //   style: GoogleFonts.quicksand(
-                      //     fontSize: 56,
-                      //     color: Colors.white,
-                      //     fontWeight: FontWeight.w600,
-                      //   ),
-                      // ),
+
                       const SizedBox(width: 8),
                       Icon(
                         Icons.visibility_outlined,
@@ -303,9 +234,7 @@ class _WalletCardState extends State<WalletCard> {
                     ],
                   ),
 
-                  // const SizedBox(height: 12),
 
-                  // Converted amount with emoji image on right
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

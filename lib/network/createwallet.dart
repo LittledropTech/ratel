@@ -11,9 +11,7 @@ Future<Map<String,dynamic>> createWallet( Network network)async{
     final descriptorSecretKey = await DescriptorSecretKey.create(network: network, mnemonic: mnemonic);
     final externalDescriptor = await  Descriptor.newBip44(secretKey: descriptorSecretKey, network: network, keychain: KeychainKind.External,);
     final internaldescriptor = await Descriptor.newBip44(secretKey: descriptorSecretKey, network: network, keychain: KeychainKind.Internal);
-    //getting all user publickeys via (Xpub)
     final externalPublicDescriptorString = await externalDescriptor.asString();
-    //store  my user phrases on their devices
     await secureStorage.write(key:'users_mnemonics' , value: mnemonic.toString());
     return {
       'mnemonics': mnemonic.toString(),

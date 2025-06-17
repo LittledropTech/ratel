@@ -1,3 +1,4 @@
+import 'package:bitsure/dashboard/pages/dashboard.dart';
 import 'package:bitsure/provider/authservice_provider.dart';
 import 'package:bitsure/utils/customutils.dart';
 import 'package:bitsure/utils/theme.dart';
@@ -31,20 +32,23 @@ class _PinScreenState extends State<PinScreen> {
   }
 
   Future<void> _handlePinCompleted(String enteredPin) async {
-  final authService = Provider.of<AuthService>(context, listen: false);
-  final storedHash = await _storage.read(key: 'user_pin_hash');
-  final enteredPinHash = hashPin(enteredPin);
+  final authService = Provider.of<Authservice>(context, listen: false);
 
-  if (enteredPinHash == storedHash) {
-    print("PIN correct. Unlocking app.");
-    await authService.unlockApp(enteredPin);
+  await authService.unLockapp(enteredPin);  // Try to unlock the app
+
+  if (authService.authState == AuthState.authenticated) {
+    print("✅ PIN correct. Unlocking app.");
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const DashboardScreen()),
+    );
   } else {
+    print("❌ Incorrect PIN. Showing error.");
     customErrorShowMeme(context);
     _pinController.clear();
-    
-      
   }
 }
+
 
   @override
   Widget build(BuildContext context) {
@@ -63,19 +67,32 @@ class _PinScreenState extends State<PinScreen> {
               // You can add your logo or an image here
               Stack(
                 children: [
-
                   Positioned(
-                    child: customcontainer(200, size.width/1.3,BoxDecoration(
-                      image: DecorationImage(image: AssetImage('assets/vector2.png'))
-                    ), SizedBox()),
+                    child: customcontainer(
+                      200,
+                      size.width / 1.3,
+                      BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage('assets/vector2.png'),
+                        ),
+                      ),
+                      SizedBox(),
+                    ),
                   ),
                   Positioned(
                     left: 15,
                     top: 10,
-                    child: customcontainer(200, size.width/1.4,BoxDecoration(
-                      image: DecorationImage(image: AssetImage('assets/meme5.png'))
-                    ), SizedBox()),
-                  )
+                    child: customcontainer(
+                      200,
+                      size.width / 1.4,
+                      BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage('assets/meme5.png'),
+                        ),
+                      ),
+                      SizedBox(),
+                    ),
+                  ),
                 ],
               ),
 
@@ -92,36 +109,32 @@ class _PinScreenState extends State<PinScreen> {
               SizedBox(
                 width: size.width / 1.4,
                 child: PinCodeTextField(
-                appContext: context,
-                length: 6,
-                controller: _pinController,
-                obscureText: false,
-                boxShadows: [
-                  BoxShadow(
-                    color: kgoldencolor
-                  )
-                ],
-                animationType: AnimationType.fade,
-                animationDuration: const Duration(milliseconds: 300),
-                enableActiveFill: true,
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(
-                    RegExp(r'[0-9]'),
-                  ), // Only digits allowed
-                ],
-                pinTheme: PinTheme(
-                  shape: PinCodeFieldShape.box,
-                  borderRadius: BorderRadius.circular(5),
-                  fieldHeight: 50,
-                  fieldWidth: 40,
-                  activeFillColor: kbackupcolor,
-                  selectedFillColor: kbackupcolor,
-                  errorBorderColor: kbackupcolor,
-                  inactiveFillColor: kbackupcolor,
+                  appContext: context,
+                  length: 6,
+                  controller: _pinController,
+                  obscureText: false,
+                  boxShadows: [BoxShadow(color: kgoldencolor)],
+                  animationType: AnimationType.fade,
+                  animationDuration: const Duration(milliseconds: 300),
+                  enableActiveFill: true,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(
+                      RegExp(r'[0-9]'),
+                    ), // Only digits allowed
+                  ],
+                  pinTheme: PinTheme(
+                    shape: PinCodeFieldShape.box,
+                    borderRadius: BorderRadius.circular(5),
+                    fieldHeight: 50,
+                    fieldWidth: 40,
+                    activeFillColor: kbackupcolor,
+                    selectedFillColor: kbackupcolor,
+                    errorBorderColor: kbackupcolor,
+                    inactiveFillColor: kbackupcolor,
+                  ),
+                  onCompleted: _handlePinCompleted,
                 ),
-                onCompleted: _handlePinCompleted,
-              ),
               ),
             ],
           ),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-// import 'chaos_item.dart'; // Adjust this import path to where chaosItem is defined
 
 enum FilterOption { In, Out, Date, Amount }
 
@@ -43,7 +42,7 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
       case FilterOption.Out:
         return allTransactions.where((t) => !t.isIn).toList();
       case FilterOption.Date:
-        return allTransactions; // No date sorting applied
+        return allTransactions; // Date sorting not implemented
       case FilterOption.Amount:
         final sorted = List<Transaction>.from(allTransactions);
         sorted.sort((a, b) => b.amount.compareTo(a.amount));
@@ -94,7 +93,7 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
               ),
             ),
           ),
-          const SizedBox(width: 48), // Placeholder for symmetry
+          const SizedBox(width: 48), // Symmetry placeholder
         ],
       ),
     );
@@ -120,9 +119,9 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
     final isSelected = _selectedFilter == option;
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
+        backgroundColor: isSelected ? Colors.white : Colors.grey[200],
+        foregroundColor: Colors.black87,
         elevation: isSelected ? 3 : 0,
-        // primary: isSelected ? Colors.white : Colors.grey[200],
-        // onPrimary: Colors.black87,
         side: isSelected
             ? const BorderSide(color: Colors.black87, width: 1.5)
             : BorderSide(color: Colors.grey.shade400),
@@ -145,7 +144,7 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
         final tx = filteredTransactions[index];
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
-          child: ChaosItem( // Custom transaction widget
+          child: ChaosItem(
             isIn: tx.isIn,
             date: tx.date,
             from: tx.from,
@@ -185,7 +184,7 @@ class ChaosItem extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Left Side: From + Date
+          // Left section
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -215,8 +214,7 @@ class ChaosItem extends StatelessWidget {
               ),
             ],
           ),
-
-          // Right Side: Amount
+          // Right section
           Text(
             '${isIn ? '+' : '-'}${amount.toStringAsFixed(4)} BTC',
             style: GoogleFonts.quicksand(

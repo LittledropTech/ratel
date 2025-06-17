@@ -45,12 +45,11 @@ class _SendSummaryScreenState extends State<SendSummaryScreen> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return data['halfHourFee'].toDouble(); // e.g., 12.5
+        return data['halfHourFee'].toDouble(); 
       } else {
         throw Exception("Failed to fetch fee rate");
       }
     } catch (e) {
-      // Return a fallback default if API fails
       return 10.0;
     }
   }
@@ -60,20 +59,16 @@ class _SendSummaryScreenState extends State<SendSummaryScreen> {
     required Wallet wallet,
     required String recipientAddress,
     required int amountInSats,
-    double? feeRate, // Optional override
+    double? feeRate, 
   }) async {
     try {
-      // Create the recipient address object
       final address = await Address.create(address: recipientAddress);
 
-      // Create the transaction builder
       final txBuilder = TxBuilder();
 
-      // Add recipient and amount
       final script = await address.scriptPubKey();
       txBuilder.addRecipient(script, amountInSats);
 
-      // Fetch or use provided fee rate
       final dynamicFeeRate = feeRate ?? await fetchRecommendedFeeRate();
       txBuilder.feeRate(dynamicFeeRate);
 
@@ -271,12 +266,7 @@ class _SendSummaryScreenState extends State<SendSummaryScreen> {
                       ),
                     );
                   }
-                  //  Navigator.push(
-                  //     context,
-                  //     MaterialPageRoute(
-                  //       builder: (context) => PinEntryScreen(),
-                  //     ),
-                  //   );
+
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.transparent,
@@ -331,12 +321,18 @@ class SummaryTile extends StatelessWidget {
               fontWeight: FontWeight.w300,
             ),
           ),
-          Text(
-            value,
-            style: const TextStyle(
-              color: Colors.black87,
-              fontSize: 15,
-              fontWeight: FontWeight.w400,
+          SizedBox(width: 8,),
+          Expanded(
+            
+            child: Text(
+              value,
+              style: const TextStyle(
+                color: Colors.black87,
+                fontSize: 15,
+                fontWeight: FontWeight.w400,
+              ),
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.end,
             ),
           ),
         ],

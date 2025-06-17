@@ -28,12 +28,11 @@ class SatsFailedBottomSheet extends StatelessWidget {
                 "Oops. The Fold Collapsed",
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
               ),
-              SizedBox(width: 24), // to balance the close icon space
+              SizedBox(width: 24), 
             ],
           ),
           const SizedBox(height: 24),
 
-          // Star flower with circular image in the center
           Assets.images.cooked.image(width: 200, height: 200),
 
           const SizedBox(height: 24),

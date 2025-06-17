@@ -34,7 +34,7 @@ class ActionButtons extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          spacing: 20,
+          spacing: 18,
           children: buttons
               .map(
                 (btn) => Column(
@@ -80,8 +80,7 @@ class ActionButtons extends StatelessWidget {
                         }
                       },
                       child: Container(
-                        // width: 64,
-                        // height: 64,
+                      
                         decoration: BoxDecoration(
                           color: Colors.yellow.shade200,
                           shape: BoxShape.circle,

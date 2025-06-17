@@ -35,25 +35,20 @@ class SatsSentBottomSheet extends StatelessWidget {
   final ScreenshotController screenshotController = ScreenshotController();
 
   Future<void> captureAndShareImage(BuildContext context) async {
-    // Get the device's pixel ratio to improve image quality
     double pixelRatio = MediaQuery.of(context).devicePixelRatio;
 
     try {
-      // Capture the screenshot with specified pixelRatio
       final imageBytes = await screenshotController.capture(
         pixelRatio: pixelRatio,
       );
 
       if (imageBytes != null) {
-        // Get the application's documents directory
         final directory = await getApplicationDocumentsDirectory();
         final filePath = '${directory.path}.png';
         final file = File(filePath);
 
-        // Write the image file
         await file.writeAsBytes(imageBytes);
 
-        // Share the image file
         await Share.shareXFiles([
           XFile(file.path),
         ], text: 'EKXPAY Transaction Receipt');
@@ -93,12 +88,11 @@ class SatsSentBottomSheet extends StatelessWidget {
                   "Sats Sent, Vibes Delivered",
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                 ),
-                SizedBox(width: 24), // to balance the close icon space
+                SizedBox(width: 24), 
               ],
             ),
             const SizedBox(height: 24),
         
-            // Star flower with circular image in the center
             Stack(
               children: [
                 Positioned(
@@ -157,7 +151,6 @@ class SatsSentBottomSheet extends StatelessWidget {
                   Text("Onchain", style: const TextStyle(color: Colors.black54)),
                   GestureDetector(
                     onTap: () {
-                      // Handle read more action
                       launchURL(
                         context,
                         network == 'testnet'

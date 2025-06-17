@@ -110,10 +110,10 @@ class RecentChaosList extends StatelessWidget {
 }
 
 class ChaosItem {
-  final bool isUp;       // true if it's a received tx (inflow), false if sent (outflow)
-  final String date;     // Formatted date string (e.g., "16/6/2025 14:47")
-  final String from;     // Could be "You", "Someone", etc.
-  final String amount;   // e.g., "+0.00042 BTC" or "-0.0011 BTC"
+  final bool isUp;       
+  final String date;     
+  final String from;     
+  final String amount;   
 
   const ChaosItem({
     required this.isUp,

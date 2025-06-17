@@ -45,7 +45,6 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                   child: Container(color: Colors.transparent),
                 ),
               ),
-              // Optional: add white border
               Positioned(
                 left: scanWindow.left,
                 top: scanWindow.top,

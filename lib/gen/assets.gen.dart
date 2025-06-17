@@ -15,11 +15,9 @@ import 'package:vector_graphics/vector_graphics.dart' as _vg;
 class $AssetsIconsGen {
   const $AssetsIconsGen();
 
-  /// File path: assets/icons/fluent_learning-app-16-regular.svg
   SvgGenImage get fluentLearningApp16Regular =>
       const SvgGenImage('assets/icons/fluent_learning-app-16-regular.svg');
 
-  /// File path: assets/icons/mingcute_scan-line.svg
   SvgGenImage get mingcuteScanLine =>
       const SvgGenImage('assets/icons/mingcute_scan-line.svg');
 

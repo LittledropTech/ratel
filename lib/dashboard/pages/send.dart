@@ -11,7 +11,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import '../../gen/assets.gen.dart';
-import '../../utils/theme.dart'; // Adjust path based on your structure
+import '../../utils/theme.dart'; 
 
 class SendBitcoinScreen extends StatefulWidget {
   const SendBitcoinScreen({super.key});
@@ -30,6 +30,7 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
   String? displayText;
   String? address;
   String? balance;
+  bool enable =false;
 
   void _fillAmount(String amount) {
     setState(() {
@@ -37,26 +38,24 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
     });
   }
 
-      Future<double> fetchRecommendedFeeRate() async {
-  try {
-    final response = await http.get(
-      Uri.parse('https://mempool.space/api/v1/fees/recommended'),
-    );
+  Future<double> fetchRecommendedFeeRate() async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://mempool.space/api/v1/fees/recommended'),
+      );
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      // Use halfHourFee or fastestFee as per your preference
-      return data['halfHourFee'].toDouble(); // e.g., 12.5
-    } else {
-      throw Exception("Failed to fetch fee rate");
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['halfHourFee'].toDouble(); 
+      } else {
+        throw Exception("Failed to fetch fee rate");
+      }
+    } catch (e) {
+      return 10.0;
     }
-  } catch (e) {
-    // Return a fallback default if API fails
-    return 10.0;
   }
-}
 
-  void _sendBitcoin()async {
+  void _sendBitcoin() async {
     final address = addressController.text.trim();
     final amount = amountController.text.trim();
     if (address.isEmpty || amount.isEmpty) {
@@ -66,23 +65,20 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
       return;
     }
 
-
     double feeRate = await fetchRecommendedFeeRate();
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => SendSummaryScreen(
-        memo:memoController.text,
-        recipientAddress:  address,
-        amountInBTC: amount,
-        networkFee: feeRate.toString(),
-        wallet: _wallet!,
-        network: Network.Testnet ,
-      
-      )),
+      MaterialPageRoute(
+        builder: (context) => SendSummaryScreen(
+          memo: memoController.text,
+          recipientAddress: address,
+          amountInBTC: amount,
+          networkFee: feeRate.toString(),
+          wallet: _wallet!,
+          network: Network.Testnet,
+        ),
+      ),
     );
-
-
- 
   }
 
   @override
@@ -91,29 +87,28 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
     _initializeWalletAndBalance();
   }
 
-    Future<void> syncWallet(Wallet wallet, {String? electrumUrl}) async {
-  // Default Electrum server for testnet
-  final defaultElectrumUrl = electrumUrl ?? 'ssl://electrum.blockstream.info:60002';
-  
-  final blockchain = await Blockchain.create(
-    config: BlockchainConfig.electrum(
-      config: ElectrumConfig(
-        url: defaultElectrumUrl,
-        socks5: null,
-        retry: 5,
-        timeout: 5,
-        stopGap: 10,
-        validateDomain: false,
+  Future<void> syncWallet(Wallet wallet, {String? electrumUrl}) async {
+    final defaultElectrumUrl =
+        electrumUrl ?? 'ssl://electrum.blockstream.info:60002';
+
+    final blockchain = await Blockchain.create(
+      config: BlockchainConfig.electrum(
+        config: ElectrumConfig(
+          url: defaultElectrumUrl,
+          socks5: null,
+          retry: 5,
+          timeout: 5,
+          stopGap: 10,
+          validateDomain: false,
+        ),
       ),
-    ),
-  );
-  
-  await wallet.sync(blockchain);
-}
+    );
+
+    await wallet.sync(blockchain);
+  }
 
   Future<void> _initializeWalletAndBalance() async {
     try {
-      // This assumes you already created descriptors
       final network = Network.Testnet;
       FlutterSecureStorage storage = const FlutterSecureStorage();
       String? mnemonicStr = await storage.read(key: 'users_mnemonics') ?? "";
@@ -144,8 +139,7 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
         databaseConfig: const DatabaseConfig.memory(),
       );
 
-
-    await syncWallet(_wallet!);
+      await syncWallet(_wallet!);
       final balance = await _wallet!.getBalance();
       setState(() {
         _balanceSats = balance.total;
@@ -159,6 +153,43 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  final FlutterSecureStorage secureStorage = const FlutterSecureStorage();
+  Future<String?> decodeEmojiToAddress(String emojiAlias) async {
+    final url = Uri.parse(
+      'https://test-api-ratle.littledrop.co/api/v1/emoji-token/decode/',
+    );
+    log(emojiAlias);
+    var emojiDecodeformstorage = await secureStorage.read(key: 'emoji_token');
+    log("${emojiDecodeformstorage} ");
+    final payload = {'emoji_alias': emojiDecodeformstorage};
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(payload),
+      );
+
+      debugPrint("Decode Status Code: ${response.statusCode}");
+      debugPrint("Decode Response Body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data.containsKey('address')) {
+          final String address = data['address'];
+          debugPrint("Successfully decoded address: $address");
+          return address;
+        }
+      } else {
+        debugPrint("Failed to decode emoji. Status: ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      debugPrint("An error occurred during decoding: $e");
+      return null;
+    }
+    return null;
   }
 
   @override
@@ -207,11 +238,10 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
-                                  // const SizedBox(width: 1),
                                   Text(
-                                    (_balanceSats! / 100000000).toStringAsFixed(
+                                    (_balanceSats?? 0 / 100000000).toStringAsFixed(
                                       5,
-                                    ), // Conve
+                                    ), 
                                     style: GoogleFonts.quicksand(
                                       fontSize: 48,
                                       color: Colors.black,
@@ -259,9 +289,7 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
                 ),
               ),
 
-              // const SizedBox(height: 12),
 
-              // Converted amount with emoji image on right
               const SizedBox(height: 42),
               Text(
                 "Recipient Bitcoin Address",
@@ -274,8 +302,20 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
               const SizedBox(height: 10),
               TextField(
                 controller: addressController,
+                onChanged: (value) async {
+                  try {
+                    var address = await decodeEmojiToAddress(value);
+                    if(address?.isNotEmpty== true){
+                      addressController.text = address ?? '';
+                    }
+                    
+                  } catch (e) {
+                    log(e.toString());
+                  }
+                },
+
                 decoration: InputDecoration(
-                  hintText: "Paste or enter BTC address",
+                  hintText: "Paste Emoji or enter BTC address",
                   border: OutlineInputBorder(),
                   suffixIcon: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -283,6 +323,7 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
                       InkWell(
                         child: Assets.icons.qlementineIconsPaste16.svg(),
                         onTap: () async {
+                          log(debugDescribeFocusTree());
                           final clipboardData = await Clipboard.getData(
                             'text/plain',
                           );
@@ -330,6 +371,19 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
               ),
               const SizedBox(height: 10),
               TextField(
+                onChanged: (value) {
+                  try {
+                  var  bal =    (_balanceSats ?? 0 / 100000000).toStringAsFixed(5);
+                   var amt =  double.parse(bal);
+                   var val= double.parse(value);
+                   setState(() {
+                     enable=amt >val;
+                   });
+                    
+                  } catch (_) {
+                    
+                  }
+                },
                 controller: amountController,
                 keyboardType: TextInputType.numberWithOptions(decimal: true),
                 decoration: const InputDecoration(
@@ -397,8 +451,13 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
                   ],
                 ),
                 child: ElevatedButton(
-                  onPressed: _sendBitcoin,
+
+                  onPressed: (){
+
+                  } ,
+                  
                   style: ElevatedButton.styleFrom(
+                  
                     backgroundColor: Colors.transparent,
                     elevation: 0,
                     shadowColor: Colors.transparent,

@@ -73,16 +73,13 @@ class LearnScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Browser input
               _BrowserInput(),
               const SizedBox(height: 20),
 
-              // Quote
               _QuoteCard(),
 
               const SizedBox(height: 24),
 
-              // Lessons section
               Text("Earn", style: titleStyle),
               const SizedBox(height: 8),
               SizedBox(
@@ -104,7 +101,6 @@ class LearnScreen extends StatelessWidget {
 
               const SizedBox(height: 24),
 
-              // Lessons section
               Text("Lessons", style: titleStyle),
               const SizedBox(height: 8),
               SizedBox(

@@ -52,14 +52,12 @@ class _StatsScreenState extends State<StatsScreen> {
       return;
     }
 
-    // `result.data` is a List<MarketChartOHLC>
     final ohlc = result.data;
     if (ohlc.isEmpty) {
       print('No OHLC data returned.');
       return;
     }
 
-    // The last element’s `close` is effectively "most recent" price
     final latest = ohlc.last;
     print('As of ${latest.timestamp}:');
     print('  Open:  ${latest.open}');
@@ -89,7 +87,6 @@ class _StatsScreenState extends State<StatsScreen> {
         result.data!.marketData != null) {
       final market = result.data!.marketData!;
       setState(() {
-        // priceUSD = (market['info'] as num).toDouble();
 
         change24h = market.priceChangePercentage24h?.toDouble();
       });
@@ -230,34 +227,9 @@ class _StatsScreenState extends State<StatsScreen> {
               }).toList(),
             ),
 
-            // Wrap(
-            //   spacing: 8,
-            //   children: ['1D', '1W', '1M', '1Y', 'ALL'].map((r) {
-            //     final bool sel = r == selectedRange;
-            //     return ElevatedButton(
-            //       onPressed: () {
-            //         setState(() {
-            //           selectedRange = r;
-            //           fetchChart();
-            //         });
-            //       },
-            //       style: ElevatedButton.styleFrom(
-            //         shape: RoundedRectangleBorder(
-            //             borderRadius: BorderRadius.circular(8)),
-            //         backgroundColor:
-            //             sel ? Colors.amber[200] : Colors.grey[200],
-            //         elevation: 4,
-            //         shadowColor: Colors.black87,
-            //       ),
-            //       child: Text(r,
-            //           style: GoogleFonts.quicksand(
-            //               color: sel ? Colors.black : Colors.grey[700])),
-            //     );
-            //   }).toList(),
-            // ),
+
             const SizedBox(height: 32),
             GestureDetector(
-              // onTap: () => printCurrentBtcPrice(),
               child: Container(
                 width: double.infinity,
                 margin: const EdgeInsets.symmetric(horizontal: 16),

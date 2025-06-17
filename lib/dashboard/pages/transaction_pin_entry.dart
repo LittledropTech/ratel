@@ -206,7 +206,6 @@ class _PinEntryScreenState extends State<PinEntryScreen> {
             ),
             const SizedBox(height: 24),
 
-            /// ✔ Responsive Grid (No Scroll)
             Flexible(
               child: LayoutBuilder(
                 builder: (context, constraints) {
@@ -220,7 +219,6 @@ class _PinEntryScreenState extends State<PinEntryScreen> {
                     mainAxisSpacing: 12,
                     crossAxisSpacing: 12,
                     shrinkWrap: true,
-                    // childAspectRatio: gridItemWidth / gridItemHeight,
                     childAspectRatio: 2,
                     children: [
                       ...List.generate(9, (index) => _buildKey('${index + 1}')),
@@ -245,7 +243,7 @@ class _PinEntryScreenState extends State<PinEntryScreen> {
   }
 
     Future<void> _handlePinCompleted(String enteredPin) async {
-  final authService = Provider.of<AuthService>(context, listen: false);
+  final authService = Provider.of<Authservice>(context, listen: false);
   final storedHash = await _storage.read(key: 'user_pin_hash');
   final enteredPinHash = hashPin(enteredPin);
 
