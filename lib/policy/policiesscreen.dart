@@ -53,7 +53,6 @@ class _PoliciesscreenState extends State<Policiesscreen> {
               ),
               const SizedBox(height: 30),
 
-              // --- Light Blue Information Container ---
               customcontainer(
                 290, // Let the height be determined by the content
                 size.width,
@@ -118,7 +117,6 @@ class _PoliciesscreenState extends State<Policiesscreen> {
                 ),
               ),
 
-              // --- THIS IS THE FIX: Checkbox and Button are now directly below ---
               const SizedBox(height: 30),
               buildClauseCheckbox(
                 title: "I understand I'm responsible for my keys and funds",
