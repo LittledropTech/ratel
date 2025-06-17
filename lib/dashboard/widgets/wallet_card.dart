@@ -67,13 +67,11 @@ class _WalletCardState extends State<WalletCard> {
 
   Future<void> _initializeWalletAndBalance() async {
     try {
-      // This assumes you already created descriptors
 
       FlutterSecureStorage storage = const FlutterSecureStorage();
       String? mnemonicStr = await storage.read(key: 'users_mnemonics') ?? "";
 
       final mnemonic = await Mnemonic.fromString(mnemonicStr);
-      //  await blockchainInit();
     
 
       final descriptorSecretKey = await DescriptorSecretKey.create(
