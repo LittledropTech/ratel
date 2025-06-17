@@ -1,13 +1,13 @@
-// Wallet Card Widget
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:bdk_flutter/bdk_flutter.dart';
 import 'package:bitsure/dashboard/pages/bag/all_bags.dart';
 import 'package:bitsure/utils/customutils.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
 
 import '../../gen/assets.gen.dart';
 
@@ -20,59 +20,27 @@ class WalletCard extends StatefulWidget {
 }
 
 class _WalletCardState extends State<WalletCard> {
+  Wallet? _wallet;
+  int? _balanceSats;
+  bool _isLoading = true;
+  String? address;
+  double _btcToUsdRate = 0;
+  final network = Network.Testnet;
+
   @override
   void initState() {
     super.initState();
     _initializeWalletAndBalance();
   }
 
-  Wallet? _wallet;
-  int? _balanceSats;
-  late Blockchain blockchain;
-  bool _isLoading = true;
-  String? displayText;
-  String? address;
-  String? balance;
-  final network = Network.Testnet;
-
-  Future<String> getNewAddress(Wallet? wallet) async {
-    final addressInfo = await wallet?.getAddress(
-      addressIndex: const AddressIndex.new(),
-    );
-    log(addressInfo!.address.toString());
-    return addressInfo!.address.toString();
-  }
-
-
-  Future<void> syncWallet(Wallet wallet, {String? electrumUrl}) async {
-  // Default Electrum server for testnet
-  final defaultElectrumUrl = electrumUrl ?? 'ssl://electrum.blockstream.info:60002';
-  
-  final blockchain = await Blockchain.create(
-    config: BlockchainConfig.electrum(
-      config: ElectrumConfig(
-        url: defaultElectrumUrl,
-        socks5: null,
-        retry: 5,
-        timeout: 5,
-        stopGap: 10,
-        validateDomain: false,
-      ),
-    ),
-  );
-  
-  await wallet.sync(blockchain);
-}
-
-
   Future<void> _initializeWalletAndBalance() async {
     try {
+      const storage = FlutterSecureStorage();
+      final mnemonicStr = await storage.read(key: 'users_mnemonics');
 
-      FlutterSecureStorage storage = const FlutterSecureStorage();
-      String? mnemonicStr = await storage.read(key: 'users_mnemonics') ?? "";
+      assert(mnemonicStr != null && mnemonicStr.isNotEmpty, 'Mnemonic not found');
 
-      final mnemonic = await Mnemonic.fromString(mnemonicStr);
-    
+      final mnemonic = await Mnemonic.fromString(mnemonicStr!);
 
       final descriptorSecretKey = await DescriptorSecretKey.create(
         network: network,
@@ -94,32 +62,72 @@ class _WalletCardState extends State<WalletCard> {
       _wallet = await Wallet.create(
         descriptor: externalDescriptor,
         changeDescriptor: internalDescriptor,
-        network: Network.Testnet,
+        network: network,
         databaseConfig: const DatabaseConfig.memory(),
       );
-      await syncWallet(_wallet!);
+
+      await _syncWallet(_wallet!);
+
       final balance = await _wallet!.getBalance();
+      final addrInfo = await _wallet!.getAddress(addressIndex: const AddressIndex.new());
+
+      await _fetchBtcToUsdRate();
+
       setState(() {
         _balanceSats = balance.total;
+        address = addrInfo.address;
         _isLoading = false;
       });
 
-      getNewAddress(_wallet);
-      
-      log(_balanceSats.toString(), name: "Sats Balance");
-   
-      // syncWallet();
-    } catch (e) {
-      debugPrint('Error initializing wallet: $e');
+      log('Address: $address');
+      log('Sats Balance: $_balanceSats');
+    } catch (e, st) {
+      debugPrint('Wallet init failed: $e');
+      log('Wallet init error', error: e, stackTrace: st);
       setState(() {
         _isLoading = false;
       });
     }
+  }
 
+  Future<void> _syncWallet(Wallet wallet, {String? electrumUrl}) async {
+    final url = electrumUrl ?? 'ssl://electrum.blockstream.info:60002';
+    final blockchain = await Blockchain.create(
+      config: BlockchainConfig.electrum(
+        config: ElectrumConfig(
+          url: url,
+          socks5: null,
+          retry: 5,
+          timeout: 5,
+          stopGap: 10,
+          validateDomain: false,
+        ),
+      ),
+    );
+    await wallet.sync(blockchain);
+  }
+
+  Future<void> _fetchBtcToUsdRate() async {
+    try {
+      final response = await http.get(Uri.parse(
+          'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd'));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          _btcToUsdRate = data['bitcoin']['usd']?.toDouble() ?? 0;
+        });
+      }
+    } catch (e) {
+      log("Failed to fetch BTC price: $e");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final btcAmount = satsToBtc(_balanceSats ?? 0);
+    final usdEquivalent = (_btcToUsdRate * btcAmount).toStringAsFixed(2);
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.black,
@@ -129,7 +137,6 @@ class _WalletCardState extends State<WalletCard> {
         borderRadius: BorderRadius.circular(16),
         child: Stack(
           children: [
-            // Custom green shapes painted top-left and bottom-right
             Positioned(
               top: 0,
               left: 22,
@@ -149,30 +156,18 @@ class _WalletCardState extends State<WalletCard> {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 24),
-              decoration: BoxDecoration(
-                color: Colors.transparent,
-                borderRadius: BorderRadius.circular(16),
-              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Dropdown label
                   InkWell(
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) {
-                            return AllBagsscreen();
-                          },
-                        ),
+                        MaterialPageRoute(builder: (context) => AllBagsscreen()),
                       );
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade900,
                         borderRadius: BorderRadius.circular(50),
@@ -188,15 +183,12 @@ class _WalletCardState extends State<WalletCard> {
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                          Icon(
-                            Icons.keyboard_arrow_down,
-                            color: Colors.white70,
-                          ),
+                          const Icon(Icons.keyboard_arrow_down, color: Colors.white70),
                         ],
                       ),
                     ),
                   ),
-
+                  const SizedBox(height: 16),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -210,34 +202,33 @@ class _WalletCardState extends State<WalletCard> {
                         ),
                       ),
                       Text(
-                        _isLoading
-                            ? '...'
-                            : (satsToBtc(_balanceSats?? 0) ).toStringAsFixed(
-                                5,
-                              ), // Convert sats to BTC
+                        _isLoading ? '...' : btcAmount.toStringAsFixed(5),
                         style: GoogleFonts.quicksand(
                           fontSize: 56,
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(width: 1),
-
                       const SizedBox(width: 8),
-                      Icon(
-                        Icons.visibility_outlined,
-                        color: Colors.white,
-                        size: 28,
-                      ),
+                      const Icon(Icons.visibility_outlined, color: Colors.white, size: 28),
                     ],
                   ),
-
-
+                  const SizedBox(height: 8),
+                  if (!_isLoading && address != null)
+                    SelectableText(
+                      address!,
+                      style: GoogleFonts.quicksand(
+                        fontSize: 12,
+                        color: Colors.white70,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  const SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        '= \$285.32 - Decent, not rich.',
+                        _isLoading ? '= ...' : '= \$$usdEquivalent',
                         style: GoogleFonts.quicksand(
                           color: Colors.white70,
                           fontSize: 12,
@@ -252,7 +243,6 @@ class _WalletCardState extends State<WalletCard> {
                             shape: BoxShape.circle,
                             border: Border.all(color: Colors.white),
                           ),
-
                           child: Image.asset(
                             Assets.meme1.path,
                             width: 24,

@@ -2,13 +2,14 @@ import 'package:bdk_flutter/bdk_flutter.dart';
 import 'package:bitsure/network/createwallet.dart';
 import 'package:bitsure/policy/policiesscreen.dart';
 import 'package:bitsure/onboarding/restorewalletflow/restorewalletscreen.dart';
+import 'package:bitsure/provider/wallet_authprovider.dart';
 
-import 'package:bitsure/utils/customutils.dart'
-    show custombuttons, customcontainer;
+import 'package:bitsure/utils/customutils.dart'show custombuttons, customcontainer;
 import 'package:bitsure/utils/textstyle.dart';
 import 'package:bitsure/utils/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 class Optionscreen extends StatefulWidget {
   const Optionscreen({super.key});
@@ -18,6 +19,7 @@ class Optionscreen extends StatefulWidget {
 }
 
 class _OptionscreenState extends State<Optionscreen> {
+  
   List<String>? _mnemonic;
   bool _isCreatingWallet = false;
 
