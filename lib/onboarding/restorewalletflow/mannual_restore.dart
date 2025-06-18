@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:bdk_flutter/bdk_flutter.dart' as bdk;
 import 'package:bitsure/utils/customutils.dart';
 import 'package:bitsure/utils/theme.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ManualRestoreScreen extends StatefulWidget {
   const ManualRestoreScreen({super.key});
@@ -18,7 +19,6 @@ class _ManualRestoreScreenState extends State<ManualRestoreScreen> {
   @override
   void initState() {
     super.initState();
-    // Add the listener to the first text field's controller.
     _controllers[0].addListener(_onFirstFieldChanged);
   }
   void _onFirstFieldChanged() {
@@ -33,37 +33,45 @@ class _ManualRestoreScreenState extends State<ManualRestoreScreen> {
     }
   }
 
-  /// Verifies the seed phrase and navigates to the Create PIN screen on success.
-  Future<void> _verifyAndProceed() async {
-    final bool isAnyFieldEmpty =
-        _controllers.any((controller) => controller.text.trim().isEmpty);
+Future<void> _verifyAndProceed() async {
+  final bool isAnyFieldEmpty =
+      _controllers.any((controller) => controller.text.trim().isEmpty);
 
-    if (isAnyFieldEmpty) {
-      customSnackBar("Fields cannot be empty", Colors.redAccent, context);
-      return;
-    }
-
-    final mnemonicString = _controllers
-        .map((controller) => controller.text.trim().toLowerCase())
-        .join(' ');
-
-    try {
-      await bdk.Mnemonic.fromString(mnemonicString);
-      if (!mounted) return;
-
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (_) => const RestoreNewCode()));
-    } catch (e) {
-      customSnackBar(
-          "Invalid seed phrase. Please check your words.", klightbluecolor, context);
-    }
+  if (isAnyFieldEmpty) {
+    customSnackBar("Fields cannot be empty", Colors.redAccent, context);
+    return;
   }
+
+  final mnemonicString = _controllers
+      .map((controller) => controller.text.trim().toLowerCase())
+      .join(' ');
+
+  try {
+    await bdk.Mnemonic.fromString(mnemonicString);
+
+    const storage = FlutterSecureStorage();
+    await storage.write(key: 'users_mnemonics', value: mnemonicString);
+
+    if (!mounted) return;
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const RestoreNewCode()),
+    );
+  } catch (e) {
+    customSnackBar(
+      "Invalid seed phrase. Please check your words.",
+      klightbluecolor,
+      context,
+    );
+  }
+}
+
+
 
   @override
   void dispose() {
-    // IMPORTANT: Remove the listener to prevent memory leaks.
     _controllers[0].removeListener(_onFirstFieldChanged);
-    // Dispose all controllers
     for (final controller in _controllers) {
       controller.dispose();
     }

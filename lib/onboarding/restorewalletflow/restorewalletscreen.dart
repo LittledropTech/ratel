@@ -31,8 +31,7 @@ class _RestorewalletscreenState extends State<Restorewalletscreen> {
       final navigator = Navigator.of(context);
       final messenger = ScaffoldMessenger.of(context);
 
-      // --- STEP 1: Get the password from the user FIRST ---
-      // The process cannot start until we have the password.
+
       final password = await navigator.push<String>(
         MaterialPageRoute(
           builder: (context) => const Restorewalletvalidatescreen(
@@ -43,14 +42,11 @@ class _RestorewalletscreenState extends State<Restorewalletscreen> {
         ),
       );
 
-      // --- STEP 2: Check if the user cancelled the password screen ---
       if (password == null || password.isEmpty) {
         print("Password entry was cancelled by the user.");
-        return; // Exit the function if no password was provided.
+        return; 
       }
 
-      // --- STEP 3: Show a loading indicator ---
-      // Now that we have the password, we can start the search.
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -58,27 +54,20 @@ class _RestorewalletscreenState extends State<Restorewalletscreen> {
       );
 
       try {
-        // --- STEP 4: Call the single provider function that does all the work ---
-        // It will find all backups and try the provided password on each one.
-        // The function returns the decrypted List<String> on success, or null on failure.
         final List<String>? decryptedSeed = await backupProvider
             .findAndDecryptBackup(password);
 
-        // The search is complete, so we can remove the loading indicator.
         if (navigator.canPop()) {
           navigator.pop();
         }
 
-        // --- STEP 5: Check the result and navigate accordingly ---
         if (decryptedSeed != null) {
-          // SUCCESS! A backup was unlocked with the password.
           print("Restore successful. Seed Phrase: $decryptedSeed");
           await navigator.pushAndRemoveUntil(
             MaterialPageRoute(builder: (context) => const RestoreNewCode()),
             (Route<dynamic> route) => false,
           );
         } else {
-          // FAILURE: The password was wrong for all backups found.
           messenger.showSnackBar(
             const SnackBar(
               content: Text("Incorrect password or no matching backup found."),
@@ -87,7 +76,6 @@ class _RestorewalletscreenState extends State<Restorewalletscreen> {
           );
         }
       } catch (e) {
-        // This handles other potential errors (e.g., no internet, Google Drive API issues).
         if (navigator.canPop()) {
           navigator.pop();
         }
@@ -131,7 +119,6 @@ class _RestorewalletscreenState extends State<Restorewalletscreen> {
                     color: kwhitecolor,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  // handle fuctionality for retrieve  with  Google Drive
                   () async {
                     await retrieveWalletSeedFromGoogleDrive(context);
                   },
@@ -258,7 +245,6 @@ class _RestorewalletscreenState extends State<Restorewalletscreen> {
                     borderRadius: BorderRadius.circular(10),
                   ),
 
-                  //the fuction that handles the backup with Meme poem
                   () {
                     Navigator.push(
                       context,

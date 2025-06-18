@@ -23,7 +23,7 @@ class BackupProvider with ChangeNotifier {
     return account;
   }
 
-  //open the password screen for set password which will be encrypted
+
   Future<String?> promptPassword(
     BuildContext context,
     String text,
@@ -44,7 +44,7 @@ class BackupProvider with ChangeNotifier {
     );
   }
 
-  // generate salt for my users encrypted seedphrase+password
+  
   String generateSalt([int length = 16]) {
     final rand = Random.secure();
     return base64UrlEncode(
@@ -58,10 +58,10 @@ class BackupProvider with ChangeNotifier {
     return encrypt.Key(Uint8List.fromList(hash));
   }
 
-  // encrypt My users seed phrase
+ 
   Map<String, String> encryptSeed(String password, List<String> seedPhrase) {
-    // Join the list of words into a single string.
-    final plainText = seedPhrase.join(',');
+  
+    final plainText = seedPhrase.join(' ');
 
     // Prepare the encryption key and a random IV.
     final key = encrypt.Key.fromUtf8(password.padRight(32).substring(0, 32));
@@ -70,11 +70,11 @@ class BackupProvider with ChangeNotifier {
       encrypt.AES(key, mode: encrypt.AESMode.cbc),
     );
 
-    // Encrypt the data.
+   
     final encrypted = encrypter.encrypt(plainText, iv: iv);
     return {'iv': iv.base64, 'encryptedSeed': encrypted.base64};
   }
-  //hash my users seedphrase +password
+
   String hashSeed(String password, List<String> seedPhrase) {
     final seedString = seedPhrase.join(' ');
     final combined = '$password:$seedString';
@@ -82,7 +82,7 @@ class BackupProvider with ChangeNotifier {
     final digest = sha256.convert(bytes);
     return digest.toString();
   }
-  // Generate a random poem
+ 
   String generateRandomPoem() {
     final lines = [
       "In shadows deep where secrets sleep,",
@@ -101,7 +101,7 @@ class BackupProvider with ChangeNotifier {
   required String seedPhrase,
 }) async {
   try {
-    // --- 1. Encryption ---
+   
     final keyBytes = Uint8List(32);
     final passwordBytes = utf8.encode(password);
     keyBytes.setRange(0, passwordBytes.length < 32 ? passwordBytes.length : 32, passwordBytes);
@@ -138,7 +138,7 @@ class BackupProvider with ChangeNotifier {
         },
       ),
     );
-    // --- 4. Prompt User to Save File with "Save As" Dialog ---
+   
     final Uint8List pdfBytes = await pdf.save();
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final fileName = 'Ratel_Backup_$timestamp.pdf';
@@ -183,21 +183,20 @@ class BackupProvider with ChangeNotifier {
   }
   static const String _folderName = 'Ratel Wallet';
   static const String _backupFilename = 'RatelWallet_backup.txt';
-  // Finds a folder by name or creates it if it doesn't exist.
-  // And returns the ID of the folder.
+
   Future<String?> _findOrCreateFolder(drive.DriveApi driveApi) async {
-    // Search for a folder with the specified name that is not in the trash
+   
     final folderList = await driveApi.files.list(
       q: "name = '$_folderName' and mimeType = 'application/vnd.google-apps.folder' and trashed = false",
       $fields: 'files(id, name)',
     );
 
     if (folderList.files != null && folderList.files!.isNotEmpty) {
-      // Folder already exists, return its ID
+     
       print("Folder '$_folderName' found.");
       return folderList.files!.first.id;
     } else {
-      // Folder does not exist, so create it
+      
       print("Folder '$_folderName' not found, creating it...");
       final folderMetadata = drive.File()
         ..name = _folderName
@@ -208,8 +207,6 @@ class BackupProvider with ChangeNotifier {
     }
   }
 
-
-  //Retrieves the raw string content of the backup file from the visible "Ratel Wallet" folder.
   Future<List<String>?> findAndDecryptBackup(String password) async {
     try {
       print("Starting restore: finding all backups and trying password...");
@@ -222,7 +219,7 @@ class BackupProvider with ChangeNotifier {
       final authenticateClient = GoogleAuthClient(authHeaders);
       final driveApi = drive.DriveApi(authenticateClient);
 
-      // 1. Find the "Ratel Wallet" folder ID
+     
       final folderList = await driveApi.files.list(
         q: "name = '$_folderName' and mimeType = 'application/vnd.google-apps.folder' and trashed = false",
         $fields: 'files(id)',
@@ -233,7 +230,7 @@ class BackupProvider with ChangeNotifier {
       }
       final folderId = folderList.files!.first.id!;
 
-      // 2. Get a list of ALL backup files in that folder
+     
       final fileList = await driveApi.files.list(
         q: "name contains 'RatelWallet_backup' and '$folderId' in parents and trashed = false",
         $fields: 'files(id, name)',
@@ -246,7 +243,7 @@ class BackupProvider with ChangeNotifier {
       for (final file in fileList.files!) {
         print("Attempting to decrypt file: ${file.name}...");
 
-        // Download the file content
+       
         final response =
             await driveApi.files.get(
                   file.id!,
@@ -259,10 +256,10 @@ class BackupProvider with ChangeNotifier {
           final decryptedSeed = decryptSeed(encryptedJson, password);
 
           print("SUCCESS! Password matched for ${file.name}.");
-          return decryptedSeed; // Return the result and exit the function.
+          return decryptedSeed; 
         } catch (e) {
           print("Password did not match for ${file.name}. Trying next file...");
-          continue; // Move to the next file in the loop
+          continue; 
         }
       }
 
@@ -271,12 +268,12 @@ class BackupProvider with ChangeNotifier {
     } catch (e, stack) {
       print("An error occurred during the restore process: $e");
       print("Stack trace: $stack");
-      // Re-throw the error so the UI can catch it and display a message.
+      
       throw Exception("Failed to restore from Google Drive: ${e.toString()}");
     }
   }
 
-  // Uploads encrypted data to a .txt file inside the "Ratel Wallet" folder.
+  
   Future<void> uploadToGoogleDrive(String encryptedData) async {
     try {
       print("Starting Google Drive backup...");
@@ -291,7 +288,7 @@ class BackupProvider with ChangeNotifier {
       final authenticateClient = GoogleAuthClient(authHeaders);
       final driveApi = drive.DriveApi(authenticateClient);
 
-      // : Find or create the destination folder
+      
       final folderId = await _findOrCreateFolder(driveApi);
       if (folderId == null) {
         throw Exception("Could not find or create the backup folder.");

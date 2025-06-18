@@ -36,14 +36,12 @@ class _RestoreNewCodeState extends State<RestoreNewCode> {
 
   void _handlePinCompleted(String value) async {
     if (!isConfirming) {
-      // First PIN entry
       setState(() {
         firstPin = value;
         isConfirming = true;
         _pinController.clear();
       });
     } else {
-      // Confirm PIN
       if (value == firstPin) {
         final hashedPin = hashPin(firstPin!);
         print("storeHashed :$hashedPin");

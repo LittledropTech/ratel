@@ -1,11 +1,12 @@
+import 'dart:convert';
 import 'dart:developer';
-
+import 'dart:math';
+import 'package:bitsure/utils/customutils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
-
 import '../../utils/theme.dart';
 
 class EmojiSelectorScreen extends StatefulWidget {
@@ -18,24 +19,78 @@ class EmojiSelectorScreen extends StatefulWidget {
 
 class _EmojiSelectorScreenState extends State<EmojiSelectorScreen> {
   String? selectedEmoji;
-
-  final List<String> emojis = [
-    "🔔", "⚠️", "❌", "♦️", "♣️", "🍐", "❤️", "🚫", "😐", "😮",
-    "😅", "😎", "😢", "🤔", "😳", "😆", "😤", "👀", "🤠", "🧐",
-    "🤓", "🙃", "😇", "👨‍🎓", "👩‍🎓", "😷", "🤒", "👶", "🧒", "👧",
-    "👦", "👨", "👩", "🧑", "👵", "👴", "🎅", "🤶", "👼", "🧜",
-    "🧚", "🍓", "🍎", "🍔", "🥤", "🍜", "☕",
-  ];
-
+  String? storedEmojiToken; // Store the full token here
   final FlutterSecureStorage secureStorage = const FlutterSecureStorage();
 
+  final List<String> emojis = [
+    "🔔",
+    "⚠️",
+    "❌",
+    "♦️",
+    "♣️",
+    "🍐",
+    "❤️",
+    "🚫",
+    "😐",
+    "😮",
+    "😅",
+    "😎",
+    "😢",
+    "🤔",
+    "😳",
+    "😆",
+    "😤",
+    "👀",
+    "🤠",
+    "🧐",
+    "🤓",
+    "🙃",
+    "😇",
+    "👨‍🎓",
+    "👩‍🎓",
+    "😷",
+    "🤒",
+    "👶",
+    "🧒",
+    "👧",
+    "👦",
+    "👨",
+    "👩",
+    "🧑",
+    "👵",
+    "👴",
+    "🎅",
+    "🤶",
+    "👼",
+    "🧜",
+    "🧚",
+    "🍓",
+    "🍎",
+    "🍔",
+    "🥤",
+    "🍜",
+    "☕",
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    loadStoredEmojiToken();
+  }
+
+  Future<void> loadStoredEmojiToken() async {
+    final token = await secureStorage.read(key: 'emoji_token');
+    if (token != null) {
+      setState(() {
+        storedEmojiToken = token;
+      });
+    }
+  }
+
   Future<void> sendEmojiAndAddress(String emoji, String address) async {
-    final url = Uri.parse('https://test-api-ratle.littledrop.co/api/v1/emoji-token/encode/');
+    final baseUrl = dotenv.env['API_BASE_URL'] ?? '';
+    final url = Uri.parse('$baseUrl/emoji-token/encode/');
     final payload = {'emoji': emoji, 'address': address};
-
-    debugPrint("Sending POST to $url");
-    debugPrint("Payload: ${jsonEncode(payload)}");
-
     try {
       final response = await http.post(
         url,
@@ -43,37 +98,75 @@ class _EmojiSelectorScreenState extends State<EmojiSelectorScreen> {
         body: jsonEncode(payload),
       );
 
-      debugPrint("Status Code: ${response.statusCode}");
-      debugPrint("Response Body: ${response.body}");
-
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
 
         if (data.containsKey('emoji_alias')) {
-          final token = data['emoji_alias'];
-          await secureStorage.write(key: 'emoji_token', value: token);
-          debugPrint("Token saved: $token");
+          final emojiAlias = data['emoji_alias'];
+          await secureStorage.write(key: 'emoji_token', value: emojiAlias);
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Emoji linked and token saved!")),
-          );
+          setState(() {
+            storedEmojiToken = emojiAlias;
+          });
+
+          if (mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('$emoji Ready to share!')));
+          }
         } else {
-          debugPrint("No emoji_alias found in response.");
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("Token not found in response")),
           );
         }
       } else {
-        debugPrint("Failed with status code ${response.statusCode}");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Failed: ${response.statusCode}")),
         );
       }
     } catch (e) {
-      debugPrint("Error occurred: $e");
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Something went wrong")));
+    }
+  }
+
+  Future<void> copyStoredTokenToClipboard({bool copyOnlyEmoji = false}) async {
+    final hiddenToken = await secureStorage.read(key: 'emoji_token');
+    if (hiddenToken == null) return;
+
+    // Extract the emoji prefix
+    String emoji = '';
+    for (String knownEmoji in emojis) {
+      if (hiddenToken.startsWith(knownEmoji)) {
+        emoji = knownEmoji;
+        break;
+      }
+    }
+
+    // Copy either the emoji alone or the full token
+    final contentToCopy = copyOnlyEmoji ? emoji : hiddenToken;
+    await Clipboard.setData(ClipboardData(text: contentToCopy));
+
+    if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Something went wrong")),
+        SnackBar(
+          content: Text(
+            copyOnlyEmoji ? '$emoji copied!' : '$emoji Ready to share!',
+          ),
+        ),
       );
+    }
+  }
+
+  void copyEmojiandAddress(String emoji, String address) {
+    var pickemoji = encode(emoji, address);
+    Clipboard.setData(ClipboardData(text: pickemoji));
+
+    if (mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('$emoji copied to clipboard!')));
     }
   }
 
@@ -82,7 +175,7 @@ class _EmojiSelectorScreenState extends State<EmojiSelectorScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Container(
+        child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -93,7 +186,11 @@ class _EmojiSelectorScreenState extends State<EmojiSelectorScreen> {
                 children: [
                   InkWell(
                     onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 24),
+                    child: const Icon(
+                      Icons.arrow_back_ios,
+                      color: Colors.black,
+                      size: 24,
+                    ),
                   ),
                   const Text(
                     "James Bond, Is that you 😎",
@@ -103,8 +200,12 @@ class _EmojiSelectorScreenState extends State<EmojiSelectorScreen> {
                 ],
               ),
               const SizedBox(height: 8),
-              Text(widget.address, style: const TextStyle(color: Colors.black54)),
-              const SizedBox(height: 16),
+              Text(
+                widget.address,
+                style: const TextStyle(color: Colors.black54),
+              ),
+              const SizedBox(height: 25),
+
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
@@ -112,7 +213,10 @@ class _EmojiSelectorScreenState extends State<EmojiSelectorScreen> {
                   color: const Color(0xfff7f7f7),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Text("Select your preferred emoji", textAlign: TextAlign.left),
+                child: const Text(
+                  "Select your preferred emoji",
+                  textAlign: TextAlign.left,
+                ),
               ),
               const SizedBox(height: 16),
               Expanded(
@@ -126,18 +230,24 @@ class _EmojiSelectorScreenState extends State<EmojiSelectorScreen> {
                       onTap: () => setState(() => selectedEmoji = emoji),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: isSelected ? Colors.blue[100] : Colors.transparent,
+                          color: isSelected
+                              ? Colors.blue[100]
+                              : Colors.transparent,
                           borderRadius: BorderRadius.circular(10),
-                          border: isSelected ? Border.all(color: Colors.blue, width: 2) : null,
+                          border: isSelected
+                              ? Border.all(color: Colors.blue, width: 2)
+                              : null,
                         ),
                         alignment: Alignment.center,
-                        child: Text(emoji, style: const TextStyle(fontSize: 24)),
+                        child: Text(
+                          emoji,
+                          style: const TextStyle(fontSize: 24),
+                        ),
                       ),
                     );
                   }).toList(),
                 ),
               ),
-             
               const SizedBox(height: 16),
               Row(
                 children: [
@@ -183,12 +293,15 @@ class _EmojiSelectorScreenState extends State<EmojiSelectorScreen> {
                       child: ElevatedButton(
                         onPressed: selectedEmoji == null
                             ? null
-                            : () => sendEmojiAndAddress(selectedEmoji!, widget.address),
+                            : () => copyEmojiandAddress(
+                                selectedEmoji!,
+                                widget.address,
+                              ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black,
                           foregroundColor: Colors.white,
                         ),
-                        child: const Text("Share Emoji", style: TextStyle(color: Colors.white)),
+                        child: const Text("Share Emoji"),
                       ),
                     ),
                   ),

@@ -16,15 +16,12 @@ class Authservice  extends  ChangeNotifier {
     loadInitialState();
   }
   Future<void> loadInitialState() async {
-    print(' ✅  Read my user pin');
+  
     final pinHash = await storage.read(key: 'user_pin_hash');
     print('🔍 Stored PIN hash: $pinHash');
-     log('${pinHash}');
     _authState = (pinHash != null)
         ? AuthState.locked
         : AuthState.unauthenticated;
-
-        log('${_authState}}');
     notifyListeners();
   }
 
@@ -50,7 +47,7 @@ class Authservice  extends  ChangeNotifier {
   await storage.write(key: 'user_pin_hash', value: hashedPin);
   final confirm = await storage.read(key: 'user_pin_hash');
   print('🔐 Hashed PIN stored: $confirm');
-  _authState = AuthState.locked; // lock app after setting PIN
+  _authState = AuthState.locked; 
   notifyListeners();
 }
 

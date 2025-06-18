@@ -3,17 +3,20 @@ import 'dart:developer';
 
 import 'package:bdk_flutter/bdk_flutter.dart';
 import 'package:bitsure/dashboard/pages/bag/all_bags.dart';
+import 'package:bitsure/provider/networkprovider.dart';
 import 'package:bitsure/utils/customutils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
 
 import '../../gen/assets.gen.dart';
 
 class WalletCard extends StatefulWidget {
   final bool isMobile;
-  const WalletCard({required this.isMobile});
+  const WalletCard({required this.isMobile,});
 
   @override
   State<WalletCard> createState() => _WalletCardState();
@@ -25,70 +28,86 @@ class _WalletCardState extends State<WalletCard> {
   bool _isLoading = true;
   String? address;
   double _btcToUsdRate = 0;
-  final network = Network.Testnet;
+   late final Network network;
+  bool isloaded = true;
 
   @override
   void initState() {
+    network = context.read<NetworkProvider>().network;
     super.initState();
     _initializeWalletAndBalance();
   }
 
-  Future<void> _initializeWalletAndBalance() async {
-    try {
-      const storage = FlutterSecureStorage();
-      final mnemonicStr = await storage.read(key: 'users_mnemonics');
 
-      assert(mnemonicStr != null && mnemonicStr.isNotEmpty, 'Mnemonic not found');
+  Future<String> _getDatabasePath() async {
+  final directory = await getApplicationDocumentsDirectory();
+  final dbPath = '${directory.path}/bdk_wallet.db';
+  return dbPath;
+}
 
-      final mnemonic = await Mnemonic.fromString(mnemonicStr!);
+Future<void> _initializeWalletAndBalance() async {
+  try {
+    const storage = FlutterSecureStorage();
+    String? mnemonicStr = await storage.read(key: 'users_mnemonics');
 
-      final descriptorSecretKey = await DescriptorSecretKey.create(
-        network: network,
-        mnemonic: mnemonic,
-      );
-
-      final externalDescriptor = await Descriptor.newBip44(
-        secretKey: descriptorSecretKey,
-        network: network,
-        keychain: KeychainKind.External,
-      );
-
-      final internalDescriptor = await Descriptor.newBip44(
-        secretKey: descriptorSecretKey,
-        network: network,
-        keychain: KeychainKind.Internal,
-      );
-
-      _wallet = await Wallet.create(
-        descriptor: externalDescriptor,
-        changeDescriptor: internalDescriptor,
-        network: network,
-        databaseConfig: const DatabaseConfig.memory(),
-      );
-
-      await _syncWallet(_wallet!);
-
-      final balance = await _wallet!.getBalance();
-      final addrInfo = await _wallet!.getAddress(addressIndex: const AddressIndex.new());
-
-      await _fetchBtcToUsdRate();
-
-      setState(() {
-        _balanceSats = balance.total;
-        address = addrInfo.address;
-        _isLoading = false;
-      });
-
-      log('Address: $address');
-      log('Sats Balance: $_balanceSats');
-    } catch (e, st) {
-      debugPrint('Wallet init failed: $e');
-      log('Wallet init error', error: e, stackTrace: st);
-      setState(() {
-        _isLoading = false;
-      });
+    if (mnemonicStr == null || mnemonicStr.isEmpty) {
+      // ❌ Do not auto-create a wallet here
+      debugPrint("No mnemonic found — wallet not initialized.");
+      setState(() => _isLoading = false);
+      return;
     }
+
+    // ✅ Restore wallet from saved mnemonic
+    final mnemonic = await Mnemonic.fromString(mnemonicStr);
+
+    final descriptorSecretKey = await DescriptorSecretKey.create(
+      network: network,
+      mnemonic: mnemonic,
+    );
+
+    final externalDescriptor = await Descriptor.newBip44(
+      secretKey: descriptorSecretKey,
+      network: network,
+      keychain: KeychainKind.External,
+    );
+
+    final internalDescriptor = await Descriptor.newBip44(
+      secretKey: descriptorSecretKey,
+      network: network,
+      keychain: KeychainKind.Internal,
+    );
+
+final dbPath = await _getDatabasePath();
+_wallet = await Wallet.create(
+  descriptor: externalDescriptor,
+  changeDescriptor: internalDescriptor,
+  network: network,
+  databaseConfig: DatabaseConfig.sqlite(config: SqliteDbConfiguration(path: dbPath)),
+);
+
+
+    await _syncWallet(_wallet!);
+
+    final balance = await _wallet!.getBalance();
+    final addrInfo = await _wallet!.getAddress(addressIndex: const AddressIndex.new());
+
+    await _fetchBtcToUsdRate();
+
+    setState(() {
+      _balanceSats = balance.total;
+      address = addrInfo.address;
+      _isLoading = false;
+    });
+
+    log('Wallet restored');
+  } catch (e, st) {
+    debugPrint('Wallet restore failed: $e');
+    log('Wallet restore error', error: e, stackTrace: st);
+    setState(() => _isLoading = false);
   }
+}
+
+
 
   Future<void> _syncWallet(Wallet wallet, {String? electrumUrl}) async {
     final url = electrumUrl ?? 'ssl://electrum.blockstream.info:60002';
@@ -202,7 +221,7 @@ class _WalletCardState extends State<WalletCard> {
                         ),
                       ),
                       Text(
-                        _isLoading ? '...' : btcAmount.toStringAsFixed(5),
+                     isloaded?   _isLoading ? '...' : btcAmount.toStringAsFixed(5): '',
                         style: GoogleFonts.quicksand(
                           fontSize: 56,
                           color: Colors.white,
@@ -210,7 +229,13 @@ class _WalletCardState extends State<WalletCard> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      const Icon(Icons.visibility_outlined, color: Colors.white, size: 28),
+                      InkWell(
+                        onTap: (){
+                          setState(() {
+                            isloaded = !isloaded;
+                          });
+                        },
+                        child:  Icon( isloaded? Icons.visibility_outlined: Icons.visibility_off, color: Colors.white, size: 28)),
                     ],
                   ),
                   const SizedBox(height: 8),

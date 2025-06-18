@@ -71,60 +71,60 @@ class _PoemRestoreScreenState extends State<PoemRestoreScreen> {
     }
   }
   // Main workflow to import, decrypt, and restore the wallet.
-  Future<void> _importAndProcessPoem() async {
-    if (_isLoading) return;
-    setState(() => _isLoading = true);
-    try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['pdf'],
-      );
-      if (result == null || result.files.isEmpty) return;
-      final file = result.files.first;
-      final pdfBytes = file.path != null ? await File(file.path!).readAsBytes() : file.bytes;
-      if (pdfBytes == null) {
-        _showError('Failed to read the backup file.');
-        return;
-      }
-      final password = await _promptForPassword(context);
-      if (password == null || password.isEmpty) return;
-      final jsonStr = await _findHiddenDataInPdf(pdfBytes);
-      if (jsonStr == null) {
-        _showError('Backup data not found. The file may be invalid or corrupted.');
-        return;
-      }
-      final Map<String, dynamic> data = jsonDecode(jsonStr);
-      if (!data.containsKey('iv') || !data.containsKey('encryptedSeed')) {
-        _showError('Backup file is missing required encryption data.');
-        return;
-      }
-      final iv = encrypt.IV.fromBase64(data['iv']);
-      final encryptedSeed = encrypt.Encrypted.fromBase64(data['encryptedSeed']);
-      
-      final keyBytes = Uint8List(32);
-      final passwordBytes = utf8.encode(password);
-      keyBytes.setRange(0, passwordBytes.length < 32 ? passwordBytes.length : 32, passwordBytes);
-      final key = encrypt.Key(keyBytes);
-      final encrypter = encrypt.Encrypter(encrypt.AES(key, mode: encrypt.AESMode.cbc));
-      late final String mnemonic;
-      try {
-        mnemonic = encrypter.decrypt(encryptedSeed, iv: iv).trim();
-      } catch (e) {
-        _showError('Decryption failed. Please check your password.');
-        return;
-      }
-      await bdk.Mnemonic.fromString(mnemonic);
-      if (!mounted) return;
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => RestoreNewCode()),
-        (route) => false,
-      );
-    } catch (e) {
-      _showError('An error occurred: ${e.toString()}');
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
+ Future<void> _importAndProcessPoem() async {
+  if (_isLoading) return;
+  setState(() => _isLoading = true);
+  try {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
+    if (result == null || result.files.isEmpty) return;
+    final file = result.files.first;
+    final pdfBytes = file.path != null ? await File(file.path!).readAsBytes() : file.bytes;
+    if (pdfBytes == null) {
+      _showError('Failed to read the backup file.');
+      return;
     }
+    final password = await _promptForPassword(context);
+    if (password == null || password.isEmpty) return;
+    final jsonStr = await _findHiddenDataInPdf(pdfBytes);
+    if (jsonStr == null) {
+      _showError('Backup data not found. The file may be invalid or corrupted.');
+      return;
+    }
+    final Map<String, dynamic> data = jsonDecode(jsonStr);
+    if (!data.containsKey('iv') || !data.containsKey('encryptedSeed')) {
+      _showError('Backup file is missing required encryption data.');
+      return;
+    }
+    final iv = encrypt.IV.fromBase64(data['iv']);
+    final encryptedSeed = encrypt.Encrypted.fromBase64(data['encryptedSeed']);
+    
+    final keyBytes = Uint8List(32);
+    final passwordBytes = utf8.encode(password);
+    keyBytes.setRange(0, passwordBytes.length < 32 ? passwordBytes.length : 32, passwordBytes);
+    final key = encrypt.Key(keyBytes);
+    final encrypter = encrypt.Encrypter(encrypt.AES(key, mode: encrypt.AESMode.cbc));
+    late final String mnemonic;
+    try {
+      mnemonic = encrypter.decrypt(encryptedSeed, iv: iv).trim();
+    } catch (e) {
+      _showError('Decryption failed. Please check your password.');
+      return;
+    }
+    await bdk.Mnemonic.fromString(mnemonic);
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => RestoreNewCode()),
+      (route) => false,
+    );
+  } catch (e) {
+    _showError('An error occurred: ${e.toString()}');
+  } finally {
+    if (mounted) setState(() => _isLoading = false);
   }
+}
   @override
   Widget build(BuildContext ctx) {
     final size = MediaQuery.of(ctx).size;

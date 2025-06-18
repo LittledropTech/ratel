@@ -2,6 +2,7 @@ import 'package:bdk_flutter/bdk_flutter.dart';
 import 'package:bitsure/network/createwallet.dart';
 import 'package:bitsure/policy/policiesscreen.dart';
 import 'package:bitsure/onboarding/restorewalletflow/restorewalletscreen.dart';
+import 'package:bitsure/provider/networkprovider.dart';
 import 'package:bitsure/provider/wallet_authprovider.dart';
 
 import 'package:bitsure/utils/customutils.dart'show custombuttons, customcontainer;
@@ -22,14 +23,21 @@ class _OptionscreenState extends State<Optionscreen> {
   
   List<String>? _mnemonic;
   bool _isCreatingWallet = false;
+  late final  Network network;
 
+@override
+  void initState() {
+    network = context.read<NetworkProvider>().network;
+    super.initState();
+  }
+    
   Future<void> _createWallets() async {
     setState(() {
       _isCreatingWallet = true;
     });
 
     try {
-      final walletData = await createWallet(Network.Testnet);
+      final walletData = await createWallet(network);
 
       // Fix: Update class field, not create new local variable
       _mnemonic = walletData['mnemonics'].toString().split(" ");

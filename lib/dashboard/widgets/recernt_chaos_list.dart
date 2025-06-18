@@ -30,58 +30,60 @@ class RecentChaosList extends StatelessWidget {
 
         final chaosItems = convertToChaosItems(snapshot.data!);
 
-        return Column(
-          children: [
-            RecentChaosHeader(),
-            ListView.builder(
-              itemCount: chaosItems.length,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemBuilder: (context, index) {
-                final item = chaosItems[index];
-                return ListTile(
-                  horizontalTitleGap: 0,
-                  contentPadding: EdgeInsets.zero,
-                  leading: Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: CircleAvatar(
-                      radius: 20,
-                      backgroundColor: Colors.grey.shade200,
-                      child: Icon(
-                        item.isUp ? Icons.arrow_upward : Icons.arrow_downward,
-                        color: item.isUp ? Colors.green.shade700 : Colors.red.shade700,
-                        size: 24,
+        return SingleChildScrollView(
+          child: Column(
+            children: [
+              RecentChaosHeader(),
+              ListView.builder(
+                itemCount: chaosItems.length,
+                shrinkWrap: true,
+               
+                itemBuilder: (context, index) {
+                  final item = chaosItems[index];
+                  return ListTile(
+                    horizontalTitleGap: 0,
+                    contentPadding: EdgeInsets.zero,
+                    leading: Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: CircleAvatar(
+                        radius: 20,
+                        backgroundColor: Colors.grey.shade200,
+                        child: Icon(
+                          item.isUp ? Icons.arrow_upward : Icons.arrow_downward,
+                          color: item.isUp ? Colors.green.shade700 : Colors.red.shade700,
+                          size: 24,
+                        ),
                       ),
                     ),
-                  ),
-                  title: Text(
-                    item.date,
-                    style: GoogleFonts.quicksand(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                      color: Colors.black87,
+                    title: Text(
+                      item.date,
+                      style: GoogleFonts.quicksand(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: Colors.black87,
+                      ),
                     ),
-                  ),
-                  subtitle: Text(
-                    'From ${item.from}',
-                    style: GoogleFonts.quicksand(
-                      fontWeight: FontWeight.w400,
-                      fontSize: 12,
-                      color: Colors.grey.shade600,
+                    subtitle: Text(
+                      'From ${item.from}',
+                      style: GoogleFonts.quicksand(
+                        fontWeight: FontWeight.w400,
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                      ),
                     ),
-                  ),
-                  trailing: Text(
-                    item.amount,
-                    style: GoogleFonts.quicksand(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                      color: Colors.black87,
+                    trailing: Text(
+                      item.amount,
+                      style: GoogleFonts.quicksand(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: Colors.black87,
+                      ),
                     ),
-                  ),
-                );
-              },
-            ),
-          ],
+                  );
+                },
+              ),
+            ],
+          ),
         );
       },
     );

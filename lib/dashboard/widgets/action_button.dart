@@ -80,7 +80,6 @@ class ActionButtons extends StatelessWidget {
                         }
                       },
                       child: Container(
-                      
                         decoration: BoxDecoration(
                           color: Colors.yellow.shade200,
                           shape: BoxShape.circle,

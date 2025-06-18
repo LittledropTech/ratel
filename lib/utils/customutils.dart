@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:bitsure/utils/textstyle.dart';
 import 'package:bitsure/utils/theme.dart';
 import 'package:flutter/material.dart';
@@ -60,7 +63,6 @@ int btcToSats(double btcAmount) {
   return (btcAmount * 100000000).round();
 }
 
-// convert from satoshis to BTC
 double satsToBtc(num sats) {
   return sats / 100000000;
   }
@@ -77,13 +79,13 @@ String formatDateTime(DateTime dateTime) {
       now.month == dateTime.month &&
       now.day == dateTime.day;
 
-  final timeFormat = DateFormat('h:mm a'); // e.g. 2:47 PM
+  final timeFormat = DateFormat('h:mm a');
   final formattedTime = timeFormat.format(dateTime);
 
   if (isToday) {
     return 'Today, $formattedTime';
   } else {
-    final dateFormat = DateFormat('MMM d, h:mm a'); // fallback format
+    final dateFormat = DateFormat('MMM d, h:mm a'); 
     return dateFormat.format(dateTime);
   }
 }
@@ -123,14 +125,12 @@ String formatNumber(num? value, {int decimalDigits = 2, bool short = false}) {
   bool hasDecimal = value % 1 != 0;
 
   if (short) {
-    // If there's no decimal part, return as integer
     if (!hasDecimal) {
       return NumberFormat.decimalPattern().format(value);
     } else {
       return NumberFormat("0.00").format(value);
     }
   } else {
-    // Show no decimal if value is a whole number
     return NumberFormat.currency(
       decimalDigits: hasDecimal ? decimalDigits : 0,
       symbol: "",
@@ -196,3 +196,60 @@ customLoader(BuildContext context){
     );
   });
 }
+
+String encode(String emoji,String address) {
+    final bytesArray = utf8.encode(address);
+    final encoded = _encodeEmojiWithVariationSelector(emoji, bytesArray);
+    return encoded;
+  }
+
+  String decode(String data) {
+    final decodedBytesArray = _decodeEmojiWithVariationSelector(data);
+    final decoded = utf8.decode(decodedBytesArray);
+    return decoded;
+  }
+  String _encodeEmojiWithVariationSelector(String base, List<int> bytes) {
+    final result = StringBuffer();
+    result.write(base);
+    for (final byte in bytes) {
+      result.write(_byteToVariationSelector(byte));
+    }
+    return result.toString();
+  }
+  String _byteToVariationSelector(int byte) {
+    if (byte < 16) {
+      return String.fromCharCode(0xFE00 + byte);
+    } else {
+      return String.fromCharCode(0xE0100 + (byte - 16));
+    }
+  }
+  int? _variationSelectorToByte(String variationSelector) {
+    if (variationSelector.isEmpty) return null;
+
+    final rune = variationSelector.runes.first;
+    if (rune >= 0xFE00 && rune <= 0xFE0F) {
+      return rune - 0xFE00;
+    } else if (rune >= 0xE0100 && rune <= 0xE01EF) {
+      return (rune - 0xE0100) + 16;
+    }
+    return null;
+  }
+  Uint8List _decodeEmojiWithVariationSelector(String variationSelectors) {
+    final result = <int>[];
+    bool foundFirstSelector = false;
+
+    for (final char in variationSelectors.runes) {
+      final variationSelector = String.fromCharCode(char);
+      final byte = _variationSelectorToByte(variationSelector);
+
+      if (byte != null) {
+        foundFirstSelector = true;
+        result.add(byte);
+      } else if (foundFirstSelector) {
+        break;
+      }
+    }
+
+    return Uint8List.fromList(result);
+  }
+

@@ -4,12 +4,16 @@ import 'dart:developer';
 import 'package:bdk_flutter/bdk_flutter.dart';
 import 'package:bitsure/dashboard/pages/scan_qr.dart';
 import 'package:bitsure/dashboard/pages/send_summary.dart';
+import 'package:bitsure/provider/networkprovider.dart';
 import 'package:bitsure/utils/customutils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
 import '../../gen/assets.gen.dart';
 import '../../utils/theme.dart';
 
@@ -31,6 +35,8 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
   String? address;
   String? balance;
   bool enable = false;
+  bool _isDecoding = false;
+  late final Network network;
 
   void _fillAmount(String amount) {
     setState(() {
@@ -125,7 +131,7 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
             amountInBTC: amount.toString(),
             networkFee: feeRate.toString(),
             wallet: _wallet!,
-            network: Network.Testnet,
+            network: network,
             txid: txid,
           ),
         ),
@@ -144,6 +150,7 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
   @override
   void initState() {
     super.initState();
+    network = context.read<NetworkProvider>().network;
     _initializeWalletAndBalance();
   }
 
@@ -172,9 +179,15 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
     });
   }
 
+  Future<String> _getDatabasePath() async {
+    final directory = await getApplicationDocumentsDirectory();
+    final dbPath = '${directory.path}/bdk_wallet.db';
+    return dbPath;
+  }
+
   Future<void> _initializeWalletAndBalance() async {
     try {
-      final network = Network.Testnet;
+      
       FlutterSecureStorage storage = const FlutterSecureStorage();
       String? mnemonicStr = await storage.read(key: 'users_mnemonics') ?? "";
 
@@ -196,12 +209,23 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
         network: network,
         keychain: KeychainKind.Internal,
       );
+      final dbPath = await _getDatabasePath();
+      _wallet = await Wallet.create(
+        descriptor: externalDescriptor,
+        changeDescriptor: internalDescriptor,
+        network: network,
+        databaseConfig: DatabaseConfig.sqlite(
+          config: SqliteDbConfiguration(path: dbPath),
+        ),
+      );
 
       _wallet = await Wallet.create(
         descriptor: externalDescriptor,
         changeDescriptor: internalDescriptor,
-        network: Network.Testnet,
-        databaseConfig: const DatabaseConfig.memory(),
+        network: network,
+        databaseConfig: DatabaseConfig.sqlite(
+          config: SqliteDbConfiguration(path: dbPath),
+        ),
       );
       await syncWallet(_wallet!);
       log(_balanceSats.toString(), name: "Sats Balance");
@@ -215,9 +239,8 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
 
   final FlutterSecureStorage secureStorage = const FlutterSecureStorage();
   Future<String?> decodeEmojiToAddress(String emojiAlias) async {
-    final url = Uri.parse(
-      'https://test-api-ratle.littledrop.co/api/v1/emoji-token/decode/',
-    );
+  final baseUrl = dotenv.env['API_BASE_URL'] ?? '';
+  final url = Uri.parse('$baseUrl/emoji-token/decode/');
     log(emojiAlias);
     var emojiDecodeformstorage = await secureStorage.read(key: 'emoji_token');
     log("${emojiDecodeformstorage} ");
@@ -360,14 +383,22 @@ class _SendBitcoinScreenState extends State<SendBitcoinScreen> {
               const SizedBox(height: 10),
               TextField(
                 controller: addressController,
-                onChanged: (value) async {
+                onChanged: (value) {
+                  _isDecoding = true; // prevent re-entry
                   try {
-                    var address = await decodeEmojiToAddress(value);
-                    if (address?.isNotEmpty == true) {
-                      addressController.text = address ?? '';
-                    }
+                    log(value);
+                    final decodedAddress = decode(value);
+                  
+                    addressController.text = decodedAddress;
+
+                    // Move cursor to end
+                    addressController.selection = TextSelection.fromPosition(
+                      TextPosition(offset: decodedAddress.length),
+                    );
                   } catch (e) {
-                    log(e.toString());
+                    log('Decoding failed: $e');
+                  } finally {
+                    _isDecoding = false;
                   }
                 },
 

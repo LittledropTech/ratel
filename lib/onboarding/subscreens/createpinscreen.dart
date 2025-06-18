@@ -1,5 +1,6 @@
 import 'package:bdk_flutter/bdk_flutter.dart';
 import 'package:bitsure/dashboard/pages/dashboard.dart';
+import 'package:bitsure/provider/networkprovider.dart';
 import 'package:provider/provider.dart';
 import '../../provider/wallet_authprovider.dart';
 import 'package:bitsure/utils/customutils.dart';
@@ -24,13 +25,20 @@ class _CreatepinscreenState extends State<Createpinscreen> {
   final secureStorage = FlutterSecureStorage();
   String? firstPin;
   bool isConfirming = false;
+  late final Network network;
 
   String hashPin(String pin) {
     final bytes = utf8.encode(pin);
     final digest = sha256.convert(bytes);
     return digest.toString();
   }
+  
+  @override
+  void initState() {
+    network = context.read<NetworkProvider>().network;
+    super.initState();
 
+  }
   Future<void> _handlePinCompleted(String value) async {
     if (!isConfirming) {
       setState(() {
@@ -63,11 +71,11 @@ class _CreatepinscreenState extends State<Createpinscreen> {
         (Route<dynamic> route) => false,
       );
       Future.delayed(Duration(seconds: 5), () async {
-        await walletAuthProvider.registerUserOnBackend(Network.Testnet);
+        await walletAuthProvider.registerUserOnBackend(network);
       });
     } catch (e) {
       print("An error occurred during initial PIN storage: $e");
-      customNetworkErrorDialog(context); // Or a more relevant error message
+      customNetworkErrorDialog(context); 
       setState(() {
         firstPin = null;
         isConfirming = false;

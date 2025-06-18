@@ -2,11 +2,13 @@ import 'dart:convert';
 
 import 'package:bdk_flutter/bdk_flutter.dart';
 import 'package:bitsure/dashboard/pages/sat_sent.dart';
+import 'package:bitsure/provider/networkprovider.dart';
 import 'package:bitsure/utils/customutils.dart';
 import 'package:bitsure/utils/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
 import '../../gen/assets.gen.dart';
 import 'sats_failed.dart';
@@ -39,6 +41,13 @@ class SendSummaryScreen extends StatefulWidget {
 
 class _SendSummaryScreenState extends State<SendSummaryScreen> {
   String txId = '';
+  late final Network network;
+  
+    @override
+  void initState() {
+    network = context.read<NetworkProvider>().network;
+    super.initState();
+  }
   
   Future<double> fetchRecommendedFeeRate() async {
     try {
@@ -92,7 +101,7 @@ class _SendSummaryScreenState extends State<SendSummaryScreen> {
       final blockchain = await Blockchain.create(
         config: BlockchainConfig.electrum(
           config: ElectrumConfig(
-            url: widget.network == Network.Testnet
+            url: widget.network == network
                 ? 'ssl://electrum.blockstream.info:60004'
                 : 'ssl://electrum.blockstream.info:60002',
             socks5: null,
@@ -122,7 +131,7 @@ class _SendSummaryScreenState extends State<SendSummaryScreen> {
       throw Exception('Failed to send Bitcoin: $e');
     }
   }
-
+    
   @override
   Widget build(BuildContext context) {
     final titleStyle = GoogleFonts.quicksand(
@@ -235,9 +244,9 @@ class _SendSummaryScreenState extends State<SendSummaryScreen> {
                                     .toStringAsFixed(8),
                               ),
                               status: 'Completed',
-                              network: widget.network == Network.Testnet
+                              network: widget.network == network
                                   ? 'testnet'
-                                  : 'mainnet',
+                                  : 'bitcoin',
                               txid: txId,
                             ),
                           ),

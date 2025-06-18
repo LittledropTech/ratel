@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:bitsure/dashboard/pages/dashboard.dart';
 import 'package:bitsure/gen/assets.gen.dart';
 import 'package:bitsure/utils/customutils.dart';
 import 'package:bitsure/utils/theme.dart';
@@ -134,7 +135,7 @@ class SatsSentBottomSheet extends StatelessWidget {
         
             // Info rows
             _infoRow("Amount Sent", "$amount BTC (\$22.80)"),
-            _infoRow("To", "$address"),
+            _infoRow("To:", "$address",),
             _infoRow("Network Fee", "${fee.toStringAsFixed(8)} BTC"),
             _infoRow("Status", "Confirmed"),
             _infoRow("Time", formatDateTime(time)),
@@ -150,7 +151,7 @@ class SatsSentBottomSheet extends StatelessWidget {
                 children: [
                   Text("Onchain", style: const TextStyle(color: Colors.black54)),
                   GestureDetector(
-onTap: () {
+   onTap: () {
   launchURL(
     context,
     network == 'testnet'
@@ -203,7 +204,11 @@ onTap: () {
                         ),
                         elevation: 4,
                       ),
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context){
+                          return DashboardScreen();
+                        }));
+                      },
                       child: const Padding(
                         padding: EdgeInsets.symmetric(vertical: 16),
                         child: Text(
@@ -267,7 +272,9 @@ onTap: () {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: const TextStyle(color: Colors.black54)),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.w500)),
+          Expanded(child: Text(
+            textAlign: TextAlign.end,
+            value, style: const TextStyle(fontWeight: FontWeight.w500,),overflow:TextOverflow.ellipsis ,)),
         ],
       ),
     );

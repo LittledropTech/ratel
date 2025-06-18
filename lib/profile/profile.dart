@@ -9,7 +9,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final TextEditingController aliasController = TextEditingController(text: 'Onionsman');
+  final TextEditingController aliasController = TextEditingController(text: '');
   String selectedCurrency = '\$USD';
   final List<String> currencyOptions = ['\$USD', '€EUR', '₿BTC'];
 

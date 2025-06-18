@@ -14,19 +14,24 @@ import 'package:provider/provider.dart';
 
 class Backupscreen extends StatefulWidget {
   final List<String> seedphrases;
-  const Backupscreen({super.key, required this.seedphrases});
+   final bool showButton ;
+  const Backupscreen({super.key, required this.seedphrases,this.showButton=true});
 
   @override
   State<Backupscreen> createState() => _BackupscreenState();
 }
 
 class _BackupscreenState extends State<Backupscreen> {
-  //  keeping track of my users backupoption status
   final Map<String, bool> _backupstatus = {
     "goggle_drive": false,
     "manually": true,
     "meme_poem": false,
   };
+    void initState() {
+    super.initState();
+    List<String> seeds = widget.seedphrases;
+    print(seeds);
+  }
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -210,7 +215,7 @@ class _BackupscreenState extends State<Backupscreen> {
                                           ),
                                           color: kwhitecolor.withOpacity(
                                             0.5,
-                                          ), // translucent color
+                                          ), 
                                         ),
                                         Row(
                                           children: [
@@ -252,7 +257,7 @@ class _BackupscreenState extends State<Backupscreen> {
                       }
                     } catch (e) {
                       if (!context.mounted) return;
-                      Navigator.of(context).pop(); // Close loading
+                      Navigator.of(context).pop(); 
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text("Backup failed: ${e.toString()}"),
@@ -399,7 +404,6 @@ class _BackupscreenState extends State<Backupscreen> {
                     color: kwhitecolor,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  // --- FULLY CORRECTED AND SECURE ONPRESSED FUNCTION ---
                   () async {
                     final backupProvider = Provider.of<BackupProvider>(
                       context,
@@ -409,7 +413,6 @@ class _BackupscreenState extends State<Backupscreen> {
                     final navigator = Navigator.of(context);
 
                     try {
-                      // Step 1: Prompt for the password (this part is correct).
                       if (!context.mounted) return;
                       final password = await backupProvider.promptPassword(
                         context,
@@ -427,27 +430,25 @@ class _BackupscreenState extends State<Backupscreen> {
                         return;
                       }
 
-                      // Step 2: Generate the poem (this part is correct).
+                     
                       final poem = backupProvider.generateRandomPoem();
 
-                      // Step 3: Navigate to PoemScreen, now PASSING THE PASSWORD along with other data.
-                      // The PoemScreen is now responsible for handling the backup creation.
+                     
                       if (!context.mounted) return;
                       final bool? backupCompleted = await navigator.push(
                         MaterialPageRoute(
                           builder: (context) => PoemScreen(
                             poem: poem,
                             seedphrases: widget
-                                .seedphrases, // Assuming this is a List<String>
-                            password: password, // <-- The crucial addition
+                                .seedphrases, 
+                            password: password, 
                           ),
                         ),
                       );
 
-                      // Step 4: Check if the backup was successfully completed on the PoemScreen.
+                    
                       if (backupCompleted == true) {
-                        // The user successfully saved the PDF from the PoemScreen.
-                        // Now, just update the UI on this screen.
+                       
                         setState(() {
                           _backupstatus['meme_poem'] = true;
                         });
@@ -462,7 +463,7 @@ class _BackupscreenState extends State<Backupscreen> {
                           ),
                         );
                       } else {
-                        // This means the user went to the PoemScreen but cancelled or backed out.
+                       
                         scaffoldMessenger.showSnackBar(
                           const SnackBar(
                             content: Text("Backup process was cancelled."),
@@ -470,7 +471,6 @@ class _BackupscreenState extends State<Backupscreen> {
                         );
                       }
                     } catch (e) {
-                      // Handle any unexpected errors.
                       if (!context.mounted) return;
                       scaffoldMessenger.showSnackBar(
                         SnackBar(content: Text("An error occurred: $e")),
@@ -522,7 +522,7 @@ class _BackupscreenState extends State<Backupscreen> {
 
               const SizedBox(height: 180),
 
-              // Bottom Button
+            if(widget.showButton)
               custombuttons(
                 40,
                 size.width * 0.9,

@@ -97,7 +97,6 @@ class _RestorewalletvalidatescreenState extends State<Restorewalletvalidatescree
               ),
               const SizedBox(height: 45),
 
-              // Password field
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
                 child: TextFormField(

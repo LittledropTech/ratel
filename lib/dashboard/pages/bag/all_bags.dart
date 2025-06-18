@@ -1,3 +1,6 @@
+import 'dart:developer';
+
+import 'package:bdk_flutter/bdk_flutter.dart';
 import 'package:bitsure/dashboard/pages/dashboard.dart';
 import 'package:bitsure/gen/assets.gen.dart';
 import 'package:bitsure/onboarding/screens/backupscreen.dart';
@@ -6,16 +9,33 @@ import 'package:bitsure/utils/customutils.dart';
 import 'package:bitsure/utils/textstyle.dart';
 import 'package:bitsure/utils/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 
 class AllBagsscreen extends StatefulWidget {
-  const AllBagsscreen({super.key});
+  AllBagsscreen({super.key});
 
   @override
   State<AllBagsscreen> createState() => _AllBagsscreenState();
 }
 
 class _AllBagsscreenState extends State<AllBagsscreen> {
+  List<String> _seedPhrases = [];
+
+  @override
+  void initState() {
+    super.initState();
+    loadMnemonics();
+  }
+
+  Future<void> loadMnemonics() async {
+    final storage = FlutterSecureStorage();
+    String? savedMnemonics = await storage.read(key: 'users_mnemonics');
+    setState(() {
+      _seedPhrases = savedMnemonics?.split(' ') ?? [];
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -55,8 +75,8 @@ class _AllBagsscreenState extends State<AllBagsscreen> {
                         borderRadius: BorderRadius.circular(10),
                       ),
 
-                      () async {
-                        Navigator.pop(context);
+                      () {
+                       Navigator.pop(context);
                       },
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -86,6 +106,16 @@ class _AllBagsscreenState extends State<AllBagsscreen> {
                           Padding(
                             padding: EdgeInsets.only(right: 12.0),
                             child: InkWell(
+                              onTap: (){
+                                 Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) {
+                              return Backupscreen(seedphrases: _seedPhrases);
+                            },
+                          ),
+                        );
+                              },
                               child: Icon(
                                 Icons.more_vert,
                                 color: Colors.black,

@@ -11,7 +11,6 @@ import 'dart:convert';
 
 
 class WalletAuthProvdiver with  ChangeNotifier{
-  /// Loads existing wallet and returns full external & internal descriptors
 Future<Map<String, dynamic>> loadWallet(Network network) async {
   final secureStorage = const FlutterSecureStorage();
   final mnemonicStr = await secureStorage.read(key: 'users_mnemonics');
@@ -40,17 +39,12 @@ Future<Map<String, dynamic>> loadWallet(Network network) async {
 
   final String externalRaw = await externalDescriptor.asString();
   final String internalRaw = await internalDescriptor.asString();
-
-  print('✅ External Descriptor: $externalRaw');
-  print('✅ Internal Descriptor: $internalRaw');
-
   return {
     'external_descriptor': externalRaw,
     'internal_descriptor': internalRaw,
   };
 }
 
-/// Generates or retrieves a stored UUIDv4 for the user
 Future<String> getOrCreateUserId() async {
   final storage = const FlutterSecureStorage();
   const key = 'user_id';
@@ -63,7 +57,7 @@ Future<String> getOrCreateUserId() async {
   return userId;
 }
 
-/// Registers the user on your backend with full descriptors
+
 Future<void> registerUserOnBackend(Network network) async {
   final userId = await getOrCreateUserId();
   final secureStorage = const FlutterSecureStorage();
@@ -74,7 +68,7 @@ Future<void> registerUserOnBackend(Network network) async {
   if (hasWallet) {
     walletData = await loadWallet(network);
   } else {
-    walletData = await createWallet(network); // Ensure `createWallet` also returns descriptors
+    walletData = await createWallet(network); 
   }
 
   final payload = {
@@ -83,11 +77,11 @@ Future<void> registerUserOnBackend(Network network) async {
     'internal_descriptor': walletData['internal_descriptor'],
   };
 
-  print('🚀 Sending payload to backend: $payload');
+  print('Sending payload to backend: $payload');
 }
 
 
-// Get transaction history
+
 Future<List<TransactionDetails>> getTransactionHistory(Wallet wallet) async {
   log(wallet.listTransactions(false).toString());
   return await wallet.listTransactions(false);

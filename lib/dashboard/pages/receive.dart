@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:bdk_flutter/bdk_flutter.dart';
+import 'package:bitsure/provider/networkprovider.dart';
 import 'package:bitsure/utils/theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -10,6 +11,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image/image.dart' as img;
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:bitsure/dashboard/pages/emoji_selector.dart';
@@ -26,12 +28,12 @@ class ReceiveBitcoinScreen extends StatefulWidget {
 }
 
 class _ReceiveBitcoinScreenState extends State<ReceiveBitcoinScreen> {
-   String userBitcoinAddress = '';
+  String userBitcoinAddress = '';
   final TextEditingController amountController = TextEditingController();
   final ScreenshotController screenshotController = ScreenshotController();
   Future<void> onDownload(BuildContext context) async {
     double pixelRatio = MediaQuery.of(context).devicePixelRatio;
-
+    final Network? network;
     try {
       final imageBytes = await screenshotController.capture(
         pixelRatio: pixelRatio,
@@ -41,10 +43,8 @@ class _ReceiveBitcoinScreenState extends State<ReceiveBitcoinScreen> {
         Directory directory;
 
         if (Platform.isIOS) {
-          // Use application documents directory on iOS
           directory = await getApplicationDocumentsDirectory();
         } else if (Platform.isAndroid) {
-          // Use external storage directory on Android
           directory = (await getExternalStorageDirectory())!;
         } else {
           throw UnsupportedError("Unsupported platform");
@@ -53,27 +53,14 @@ class _ReceiveBitcoinScreenState extends State<ReceiveBitcoinScreen> {
         final filePath = '${directory.path}/ratel_receipt.png';
         final file = File(filePath);
 
-        // Write the image file
         await file.writeAsBytes(imageBytes);
-        // print('Image saved at: $filePath');
 
-        // Open the file
         final result = await OpenFile.open(filePath);
 
-        if (result.type != ResultType.done) {
-          // print('Error opening file: ${result.message}');
-        }
-      } else {
-        // print('Failed to capture screenshot');
-      }
-    } catch (e) {
-      // print('Error capturing screenshot: $e');
-    }
+        if (result.type != ResultType.done) {}
+      } else {}
+    } catch (e) {}
   }
-
-  // void onShare(BuildContext context) async {
-  //   await captureAndShareImage(context);
-  // }
 
   void _shareAsEmoji() {
     showModalBottomSheet(
@@ -86,7 +73,7 @@ class _ReceiveBitcoinScreenState extends State<ReceiveBitcoinScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(48)),
         child: SizedBox(
           height: 700, // Desired height
-          child: EmojiSelectorScreen(address: userBitcoinAddress,),
+          child: EmojiSelectorScreen(address: userBitcoinAddress),
         ),
       ),
     );
@@ -108,10 +95,21 @@ class _ReceiveBitcoinScreenState extends State<ReceiveBitcoinScreen> {
     });
   }
 
+  void _copyAddress() {
+    Clipboard.setData(ClipboardData(text: userBitcoinAddress)).then((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Address copied to clipboard"),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    });
+  }
 
-    @override
+  @override
   void initState() {
     super.initState();
+    network = context.read<NetworkProvider>().network;
     _initializeWalletAndBalance();
   }
 
@@ -121,22 +119,26 @@ class _ReceiveBitcoinScreenState extends State<ReceiveBitcoinScreen> {
   String? displayText;
   String? address;
   String? balance;
-  final network = Network.Testnet;
+  late final Network network;
 
   Future<String> getNewAddress(Wallet? wallet) async {
     final addressInfo = await wallet?.getAddress(
       addressIndex: const AddressIndex.new(),
     );
-     setState(() {
-       userBitcoinAddress = addressInfo!.address.toString();
-     });
+    setState(() {
+      userBitcoinAddress = addressInfo!.address.toString();
+    });
     return addressInfo!.address.toString();
+  }
+
+  Future<String> _getDatabasePath() async {
+    final directory = await getApplicationDocumentsDirectory();
+    final dbPath = '${directory.path}/bdk_wallet.db';
+    return dbPath;
   }
 
   Future<void> _initializeWalletAndBalance() async {
     try {
-      // This assumes you already created descriptors
-
       FlutterSecureStorage storage = const FlutterSecureStorage();
       String? mnemonicStr = await storage.read(key: 'users_mnemonics') ?? "";
 
@@ -158,12 +160,23 @@ class _ReceiveBitcoinScreenState extends State<ReceiveBitcoinScreen> {
         network: network,
         keychain: KeychainKind.Internal,
       );
+      final dbPath = await _getDatabasePath();
+      _wallet = await Wallet.create(
+        descriptor: externalDescriptor,
+        changeDescriptor: internalDescriptor,
+        network: network,
+        databaseConfig: DatabaseConfig.sqlite(
+          config: SqliteDbConfiguration(path: dbPath),
+        ),
+      );
 
       _wallet = await Wallet.create(
         descriptor: externalDescriptor,
         changeDescriptor: internalDescriptor,
-        network: Network.Testnet,
-        databaseConfig: const DatabaseConfig.memory(),
+        network: network,
+        databaseConfig: DatabaseConfig.sqlite(
+          config: SqliteDbConfiguration(path: dbPath),
+        ),
       );
 
       final balance = await _wallet!.getBalance();
@@ -179,7 +192,8 @@ class _ReceiveBitcoinScreenState extends State<ReceiveBitcoinScreen> {
       setState(() {
         _isLoading = false;
       });
-    }}
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -189,7 +203,7 @@ class _ReceiveBitcoinScreenState extends State<ReceiveBitcoinScreen> {
       color: Colors.black87,
     );
     return Scaffold(
-        backgroundColor: kwhitecolor,
+      backgroundColor: kwhitecolor,
 
       appBar: AppBar(
         backgroundColor: kwhitecolor,
