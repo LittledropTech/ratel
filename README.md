@@ -18,6 +18,15 @@ Ratel is built not just for storage, but for experience. It combines real utilit
 Ratel isn’t just a wallet — it’s a cultural bridge.
 
 ---
+## 📱 Download the Ratel Wallet
+
+Latest beta APKs available:
+Ratel is still in Beta, do not use it for large amounts of Bitcoin
+
+- [app-arm64-v8a-release.apk](https://github.com/LittledropTech/ratel/releases/download/v0.0.1-beta.1/app-arm64-v8a-release.apk)
+- [app-armeabi-v7a-release.apk](https://github.com/LittledropTech/ratel/releases/download/v0.0.1-beta.1/app-armeabi-v7a-release.apk)
+---
+
 
 ## Key Features
 
@@ -38,14 +47,7 @@ Ratel isn’t just a wallet — it’s a cultural bridge.
 This project was built as a submission for the **[Skibidi.cash bounty](https://skibidi.cash)**.
 
 Ratel brings memes, education, gaming, and Bitcoin together in one seamless experience designed for a younger, internet-native audience.
----
-## 📱 Download the Ratel Wallet
 
-Latest beta APKs available:
-Ratel is still in Beta, do not use it for large amounts of Bitcoin
-
-- [app-arm64-v8a-release.apk](https://github.com/LittledropTech/ratel/releases/download/v0.0.1-beta.1/app-arm64-v8a-release.apk)
-- [app-armeabi-v7a-release.apk](https://github.com/LittledropTech/ratel/releases/download/v0.0.1-beta.1/app-armeabi-v7a-release.apk)
 ---
 
 ## Supported Stack and Bitcoin Tech
