@@ -16,7 +16,6 @@ Ratel is built not just for storage, but for experience. It combines real utilit
 - Interact with Bitcoin in a way that feels intuitive and native to the next generation of digital users  
 
 Ratel isn’t just a wallet — it’s a cultural bridge.
-
 ---
 ## 📱 Download the Ratel Wallet
 
@@ -41,7 +40,10 @@ Ratel is still in Beta, do not use it for large amounts of Bitcoin
 | **Built for the Culture** | Sleek, bold, and minimal UI — no jargon, no clutter. Just a fun, intuitive UX built for digital natives. |
 
 ---
+## Supported BIPs
+- [BIP44](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki) Multi-Account Hierarchy for Deterministic Wallets
 
+——-
 ## Built For
 
 This project was built as a submission for the **[Skibidi.cash bounty](https://skibidi.cash)**.
