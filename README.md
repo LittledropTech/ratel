@@ -40,6 +40,8 @@ Ratel is still in Beta, do not use it for large amounts of Bitcoin
 | **Built for the Culture** | Sleek, bold, and minimal UI — no jargon, no clutter. Just a fun, intuitive UX built for digital natives. |
 
 ---
+### Demo Video [https://youtu.be/0At8DMFgmWw]
+
 ## Supported BIPs
 - [BIP44](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki) Multi-Account Hierarchy for Deterministic Wallets
 
